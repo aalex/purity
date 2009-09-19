@@ -137,11 +137,11 @@ class SubPatch(object):
     """
     Pure Data Subpatch. 
     
-    The default name is "main" for the [pd main] subpatch.
+    The default name is "__main__" for the [pd __main__] subpatch.
     It can be found in purepy/dynamic_patch.pd
     """
     interface.implements(IElement)
-    def __init__(self, name="main", visible=False):
+    def __init__(self, name="__main__", visible=False):
         self.parent = None
         self.name = name
         self.visible = visible
@@ -157,7 +157,7 @@ class SubPatch(object):
         Objects and connections
         """
         result = []
-        if self.name != "main":
+        if self.name != "__main__":
             # TODO: random position... 
             pos = _gen_position(self)
             l = ["pd-%s" % (self.parent.name), "obj", pos[0], pos[1], "pd", self.name]
