@@ -27,11 +27,12 @@ import random
 from purity import client
 from purity import canvas
 from twisted.internet import reactor
+from twisted.internet import task
 
 RUNNING = True
 VERBOSE = False
 
-def audio_patch(purityclient):
+def audio_patch(purity_client):
     """
     Random notes example.
 
@@ -57,20 +58,20 @@ def audio_patch(purityclient):
     patch.connect(mult, 0, dac, 0)
     patch.connect(mult, 0, dac, 1) # stereo
     # todo later:
-    def send_random_note(purityclient, send_random_note):
+    def send_random_note(purity_client):
         global RUNNING
         note = random.randint(48, 72)
         delay = 0.15
         if VERBOSE:
             print("note %f" % (note))
-        purityclient.send_message("note", note, delay) # ms
-        if RUNNING:
-            reactor.callLater(delay, send_random_note, purityclient, send_random_note)
+        purity_client.send_message("note", note, delay) # ms
     
     # send messages
-    client.create_patch(purityclient, main)
-    purityclient.send_message("pd", "dsp", 1)
-    reactor.callLater(0.1, send_random_note, purityclient, send_random_note)
+    client.create_patch(purity_client, main)
+    purity_client.send_message("pd", "dsp", 1)
+    looping_call = task.LoopingCall(send_random_note, (purity_client))
+    looping_call.start(0.15)
+    #reactor.callLater(0.1, send_random_note, purity_client, send_random_note)
 
 if __name__ == "__main__":
     deferred = client.create_simple_client()
