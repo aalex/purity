@@ -25,14 +25,15 @@ Simple example of a patch dynamically created using purity.
 """
 
 from purity import client
-from purity import obj
+from purity import canvas
 from twisted.internet import reactor
 
-def creation_callback(client):
+
+def creation_callback(fudi_client):
     """
     :param client: PurityClient instance.
     """
-    main_patch = obj.get_main_patch()
+    main_patch = canvas.get_main_patch()
     # subpatch
     patch = main_patch.subpatch("metropatch", visible=True)
     # objects
@@ -45,13 +46,9 @@ def creation_callback(client):
     patch.connect(tgl, 0, metro, 0)
     patch.connect(metro, 0, bang, 0)
     # send messages
-    mess_list = main_patch.get_fudi() # list of (fudi) lists
-    # print(mess_list)
-    for mess in mess_list:
-        print("%s" % (mess))
-        client.send_message(*mess)
+    client.create_patch(fudi_client, main_patch)
     print "sent FUDI message:", "startme", 1
-    client.send_message("startme", 1)
+    fudi_client.send_message("startme", 1)
 
 if __name__ == "__main__":
     deferred = client.create_simple_client()

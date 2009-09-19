@@ -29,6 +29,8 @@ from twisted.internet import defer
 from purity import fudi
 from purity import server
 
+VERBOSE = True
+
 class PurityClient(object):
     """
     Dynamic patching Pure Data message sender.
@@ -62,7 +64,8 @@ class PurityClient(object):
         Starts sender. 
         returns deferred """
         self.client_protocol = None
-        print("Starting FUDI client sending to %d" % (self.send_port))
+        if VERBOSE:
+            print("Starting FUDI client sending to %d" % (self.send_port))
         deferred = fudi.create_FUDI_client('localhost', self.send_port, self.use_tcp)
         deferred.addCallback(self.on_client_connected)
         deferred.addErrback(self.on_client_error)
@@ -76,21 +79,24 @@ class PurityClient(object):
 
     def on_ping(self, protocol, *args):
         """ Receives FUDI __ping__"""
-        print "received __ping__", args
+        if VERBOSE:
+            print "received __ping__", args
 
     def on_confirm(self, protocol, *args):
         """ 
         Receives FUDI __confirm__ for the confirmation of every FUDI message sent
         to Pure Data. You need to send Pure Data a "__enable_confirm__ 1" message.
         """
-        print "received __confirm__", args
+        if VERBOSE:
+            print "received __confirm__", args
 
     def on_connected(self, protocol, *args):
         """ 
         Receives FUDI __connected__ when the Pure Data application 
         is ready and can send FUDI message to Python.
         """
-        print "received __connected__", args
+        if VERBOSE:
+            print "received __connected__", args
         self._server_startup_deferred.callback(self.fudi_server)
     
     def on_client_connected(self, protocol):
@@ -157,4 +163,14 @@ def create_simple_client():
     return my_deferred
 
 
+def create_patch(fudi_client, patch):
+    """
+    Sends the creation messages for a subpatch.
+    """
+    mess_list = patch.get_fudi() # list of (fudi) lists
+    # print(mess_list)
+    for mess in mess_list:
+        if VERBOSE:
+            print("%s" % (mess))
+        fudi_client.send_message(*mess)
 
