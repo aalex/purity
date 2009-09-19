@@ -31,9 +31,11 @@ along with Purity.  If not, see <http://www.gnu.org/licenses/>.
 INSTALLATION
 
 Install Pure Data and other tools::
-  sudo apt-get install python-setuptools puredata subversion help2man python-twisted
+
+  sudo apt-get install python-setuptools puredata subversion python-twisted
 
 Install Purity and start the example in a terminal window::
+
   mkdir -p ~/src
   cd ~/src/
   hg clone https://python-purity.googlecode.com/hg/ python-purity  
