@@ -1,4 +1,5 @@
 The Purity library for Pure Data dynamic patching.
+--------------------------------------------------
 
 Purity is a Python library for Pure Data dynamic patching. The idea is to be 
 able to harness the power of Pure Data for audio programming without having 
@@ -9,6 +10,7 @@ Purity uses Twisted, an event-driven Python framework.
 
 
 LICENSE
+-------
 
 Copyright 2009 Alexandre Quessy
 <alexandre@quessy.net>
@@ -29,6 +31,7 @@ along with Purity.  If not, see <http://www.gnu.org/licenses/>.
 
 
 INSTALLATION
+------------
 
 Install Pure Data and other tools::
 
