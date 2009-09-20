@@ -116,6 +116,8 @@ class PurityClient(object):
     def send_message(self, selector, *args):
         """ Send a message to pure data """
         if self.client_protocol is not None:
+            if VERBOSE:
+                print("Purity sends %s %s" % (selector, str(args)))
             # if fudi.VERBOSE:
             # print("sending %s" % (str(args)))
             # print args[0], args[1:]
@@ -130,6 +132,15 @@ class PurityClient(object):
             print "stopping the application"
             # TODO: try/catch
             reactor.callLater(0, reactor.stop)
+
+    def create_patch(self, patch):
+        """
+        Sends the creation messages for a subpatch.
+        """
+        mess_list = patch.get_fudi() # list of (fudi) lists
+        # print(mess_list)
+        for mess in mess_list:
+            self.send_message(*mess)
 
 def create_simple_client():
     """
@@ -166,6 +177,7 @@ def create_simple_client():
 def create_patch(fudi_client, patch):
     """
     Sends the creation messages for a subpatch.
+    DEPRECATED. Use client.create_patch(patch) instead.
     """
     mess_list = patch.get_fudi() # list of (fudi) lists
     # print(mess_list)

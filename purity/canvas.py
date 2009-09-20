@@ -83,6 +83,11 @@ class Obj(object):
         self.pos = [0, 0] # _gen_position(self.parent) # [random.randrange(10, 600), random.randrange(10, 400)]
         if keywords.has_key("pos"):
             self.pos = keywords["pos"]
+        if keywords.has_key("x"):
+            self.pos[0] = keywords["x"]
+        if keywords.has_key("y"):
+            self.pos[1] = keywords["y"]
+
 
     def get_fudi(self):
         li = ["obj", self.pos[0], self.pos[1], self.name]
@@ -92,6 +97,9 @@ class Obj(object):
     def set_parent(self, obj):
         self.parent = obj
 
+    def set_position(self, x, y):
+        self.pos = [x, y]
+
 class Receive(Obj):
     """
     The [receive] Pure Data object.
@@ -100,7 +108,11 @@ class Receive(Obj):
     """
     def __init__(self, receive_symbol):
         self.receive_symbol = receive_symbol
+        self.purity_client = None
         Obj.__init__(self, "r", receive_symbol)
+
+    def set_client(self, purity_client):
+        self.purity_client = purity_client
 
     def send(self, *args):
         """
@@ -108,6 +120,8 @@ class Receive(Obj):
         """
         li = [self.receive_symbol]
         li.extend(args)
+        if self.purity_client is not None:
+            self.purity_client.send_message(self.receive_symbol, *args)
         return li
 
 class Connection(object):
@@ -147,6 +161,8 @@ class SubPatch(object):
         self.visible = visible
         self.objects = []
         self.connections = []
+        # self.pos = [0, 0]
+        self.pos = _gen_position(self)
     
     def set_parent(self, obj):
         self.parent = obj
@@ -159,13 +175,14 @@ class SubPatch(object):
         result = []
         if self.name != "__main__":
             # TODO: random position... 
-            pos = _gen_position(self)
+            # pos = _gen_position(self)
+            pos = self.pos
             l = ["pd-%s" % (self.parent.name), "obj", pos[0], pos[1], "pd", self.name]
             result.append(l)
         if VERY_VERBOSE:
             print "objects"
         for obj in self.objects: 
-            obj.pos = _gen_position(self)
+            # obj.pos = # _gen_position(self)
             if type(obj) is SubPatch: # subpatch
                 result.extend(obj.get_fudi())
             else: # standard obj
@@ -214,10 +231,15 @@ class SubPatch(object):
         Common to self.obj(), self.subpatch() and self.receive(). 
         """
         obj.id = len(self.objects)
+        pos = _gen_position(self)
         obj.set_parent(self)
+        obj.set_position(*pos)
         self.objects.append(obj)
         return obj
         
+    def set_position(self, x, y):
+        self.pos = [x, y]
+
     def receive(self, receive_symbol):
         """
         Similar to obj(), but for a receive object only.
