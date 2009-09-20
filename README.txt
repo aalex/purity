@@ -35,7 +35,7 @@ INSTALLATION
 
 Install Pure Data and other tools::
 
-  sudo apt-get install python-setuptools puredata subversion python-twisted
+  sudo apt-get install python-setuptools puredata mercurial python-twisted
 
 Install Purity and start the example in a terminal window::
 
