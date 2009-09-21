@@ -124,7 +124,7 @@ class PureData(object):
     def stop(self):
         raise NotImplementedError("This is still to be done.")
 
-def fork_and_start_pd():
+def fork_and_start_pd(**kwargs):
     """
     Please exit the program if pid value is 0 
     We return the pid 
@@ -132,7 +132,7 @@ def fork_and_start_pd():
     # TODO: Also create a twisted ProcessProtocol for Pure Data.
     pid = os.fork()
     if pid == 0: # child
-        pd = PureData()
+        pd = PureData(**kwargs)
         success = pd.start()
         return 0
     else: # parent

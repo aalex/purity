@@ -23,50 +23,38 @@
 # along with ToonLoop.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Simple example of a patch dynamically created using purity.
+Pure Data sampler using Python and Purity.
 
-----------------------------
-[adc~ 3]     [receive record]    ("set $1", "bang")
-[*~ 1]
-[tabwrite~]
------------- x 8 voices ----------
-[r play]
-"set $1", "bang"
-[tabread~]
-[line~]
-[dbtorms~]
-[*~]
-[throw~ out]
------------- x N ------------
-[table array-$N <samples>]
------------------------------
-[catch~ out]
-[*~ 0.125]
-[+~]
-[dac~]
+Patch dynamically created using purity.
 """
 from twisted.internet import gtk2reactor
-gtk2reactor.install()
+gtk2reactor.install() # has to be done before importing reactor
 import gtk
-
+from twisted.internet import reactor
 import sys
-
+import os
 from purity import client
 from purity import canvas
-
-from twisted.internet import reactor
 
 TABLE_PREFIX = "table_"
 ADC_INDEX = 1 # which audio input to record from
 NUM_TABLES = 16
-NUM_PLAYERS = 4
+NUM_PLAYERS = 8
 SAMPLING_RATE = 48000
-ARRAY_DURATION = 10.0
+ARRAY_DURATION = 2.0
 OUTPUT_CATCH = "output"
 
 class Player(object):
     """
     A player plays a sound.
+
+    [r play]
+    "set $1", "bang"
+    [tabread~]
+    [line~]
+    [dbtorms~]
+    [*~]
+    [throw~ out]
     """
     #TODO: voice stealing or not
     #TODO: adsr
@@ -93,6 +81,13 @@ class Player(object):
         self.r_play.send("bang")
 
 class Recorder(object):
+    """
+    Recording subpatch.
+
+    [adc~ 3]     [receive record]    ("set $1", "bang")
+    [*~ 1]
+    [tabwrite~]
+    """
     def __init__(self, main_patch, sampler):
         self.sampler = sampler
         table_name = TABLE_PREFIX + str(0)
@@ -113,6 +108,11 @@ class Recorder(object):
             self.r_rec.send("stop")
 
 class Output(object):
+    """
+    Audio output subpatch.
+
+    [catch~] --> [*~] --> [dac~]
+    """
     def __init__(self, main_patch):
         self.patch = main_patch.subpatch("output")
         self.catch = self.patch.obj("catch~", OUTPUT_CATCH)
@@ -122,10 +122,11 @@ class Output(object):
         self.patch.connect(self.mult, 0, self.dac, 0)
         self.patch.connect(self.mult, 0, self.dac, 1)
 
-
-class FxPatch(object):
+class Sampler(object):
     """
-    FxLoop main Pure Data patch.
+    Pure Sampler main Pure Data patch.
+
+    [table array-$N <samples>]
     """
     def __init__(self):
         self.client = None
@@ -165,9 +166,13 @@ class FxPatch(object):
         #print "sent FUDI message:", "startme", 1
         #client.send_message("startme", 1)
 
-# Define the main window
 
 class SimpleSamplerApp(object):
+    """
+    Simple GTK2 GUI for the puresamler.
+    
+    Defines the main window
+    """
     def __init__(self, sampler=None):
         self.sampler = sampler
         # Window and framework
@@ -180,19 +185,24 @@ class SimpleSamplerApp(object):
 
         # Buttons
         self.hboxes = {}
+        self.labels = {}
         self.rec_buttons = {}
         self.play_buttons = {}
 
-        for i in range(8):
+        for i in range(NUM_TABLES):
             self.hboxes[i] = gtk.HBox(False, 0)
             self.box1.pack_start(self.hboxes[i], True, True, 0)
 
-            self.rec_buttons[i] = gtk.Button("Record %s" % (i))
+            self.labels[i] = gtk.Label("#%d" % (i))
+            self.hboxes[i].pack_start(self.labels[i], True, True, 0)
+            self.labels[i].show()
+
+            self.rec_buttons[i] = gtk.Button("Record")
             self.rec_buttons[i].connect("clicked", self.on_rec, i)
             self.hboxes[i].pack_start(self.rec_buttons[i], True, True, 0)
             self.rec_buttons[i].show()
 
-            self.play_buttons[i] = gtk.Button("Play %s" % (i))
+            self.play_buttons[i] = gtk.Button("Play")
             self.play_buttons[i].connect("clicked", self.on_play, i)
             self.hboxes[i].pack_start(self.play_buttons[i], True, True, 0)
             self.play_buttons[i].show()
@@ -232,22 +242,34 @@ class SimpleSamplerApp(object):
         Destroy method causes appliaction to exit
         when main window closed
         """
+        def _done(message):
+            print("_done !")
+            print(message)
+            gtk.main_quit()
+            print("reactor.stop()")
+            reactor.stop()
+            #print("sys.exit(0)")
+            #sys.exit(0) # TODO: kill child
+            
         print("Quit")
-        gtk.main_quit()
-        reactor.stop()
-        sys.exit(0) # TODO: kill child
+        if self.sampler.client is not None:
+            deferred = self.sampler.client.quit()
+            deferred.addCallback(_done)
+        else:
+            _done("No Purity client to quit.")
 
-# All PyGTK applications need a main method - event loop
 
     def main(self):
+        """
+        All PyGTK applications need a main method - event loop
+        """
         gtk.main()
 
 if __name__ == "__main__":
-    fx = FxPatch()
+    print("This pid is %d" % (os.getpid()))
+    sampler = Sampler()
     deferred = client.create_simple_client()
-    deferred.addCallback(fx.creation_callback)
-    app = SimpleSamplerApp(fx)
-    #host, port = 
-    #reactor.connectTCP(host, port, TelnetFactory())
+    deferred.addCallback(sampler.creation_callback)
+    app = SimpleSamplerApp(sampler)
     reactor.run()
 

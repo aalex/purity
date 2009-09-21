@@ -24,6 +24,7 @@
 Simpler FUDI sender.
 """
 import sys
+import os
 from twisted.internet import reactor
 from twisted.internet import defer
 from purity import fudi
@@ -37,14 +38,15 @@ class PurityClient(object):
     Used for dynamic patching with Pd.
     """
     # TODO: connect directly to pd-gui port, which is 5400 + n
-    def __init__(self, receive_port=14444, send_port = 15555, use_tcp=True, quit=quit):
+    def __init__(self, receive_port=14444, send_port = 15555, use_tcp=True, quit_after_message=False, pd_pid=None):
         self.send_port = send_port
         self.receive_port = receive_port
         self.client_protocol = None
         self.fudi_server = None
         self.use_tcp = use_tcp # TODO
-        self.quit = quit
+        self.quit_after_message = quit_after_message
         self._server_startup_deferred = None
+        self.pd_pid = pd_pid # maybe None
 
     def server_start(self):
         """ returns server """
@@ -112,6 +114,26 @@ class PurityClient(object):
         raise Exception("Could not connect to pd.... Dying.")
         # print "stop"
         # reactor.stop()
+    
+    def quit(self):
+        """
+        Quits server and client.
+        :return deferred:
+        """
+        deferred = defer.Deferred()
+        def _kill_server(deferred):
+            try:
+                sig = 9
+                os.kill(self.pd_pid, sig)
+                mess = "Killed Pure Data successfully."
+            except OSError, e:
+                mess = "Pure Data quit successfully."
+            deferred.callback(mess)
+        self.send_message("pd", "quit")
+
+        if self.pd_pid is not None:
+            reactor.callLater(0.5, _kill_server, deferred)
+        return deferred
 
     def send_message(self, selector, *args):
         """ Send a message to pure data """
@@ -128,7 +150,7 @@ class PurityClient(object):
             self.client_protocol.send_message(selector, *args)
         else:
             print("Could not send %s" % (str(args)))
-        if self.quit:
+        if self.quit_after_message:
             print "stopping the application"
             # TODO: try/catch
             reactor.callLater(0, reactor.stop)
@@ -142,7 +164,7 @@ class PurityClient(object):
         for mess in mess_list:
             self.send_message(*mess)
 
-def create_simple_client():
+def create_simple_client(**server_kwargs):
     """
     Creates a purity server (Pure Data process manager)
     and a purity client. 
@@ -158,12 +180,13 @@ def create_simple_client():
         c_deferred.addCallback(_callback, my_deferred, the_client)
     
     my_deferred = defer.Deferred()
-    pid = server.fork_and_start_pd()
+    pid = server.fork_and_start_pd(**server_kwargs)
     if pid != 0:
         the_client = PurityClient(
             receive_port=15555, 
             send_port=17777, 
-            quit=False, 
+            quit_after_message=False, 
+            pd_pid=pid,
             use_tcp=True) # create the client
         s_deferred = the_client.server_start()
         # TODO: use deferred with __connected__ instead of callLater.
