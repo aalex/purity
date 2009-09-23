@@ -25,7 +25,6 @@ Tools to create Pure Data objects and subpatches.
 """
 #TODO: rename this file to patch.py
 import random 
-from purity import fudi
 from zope import interface
 
 VERBOSE = True
@@ -279,6 +278,7 @@ def get_main_patch():
     return SubPatch() # default arg is that one
 
 if __name__ == "__main__":
+    from purity import fudi
     def test_1(main):
         # subpatch
         test1 = main.subpatch("test1")
