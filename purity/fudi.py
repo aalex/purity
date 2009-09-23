@@ -123,8 +123,13 @@ class FUDIServerFactory(Factory):
         self.callbacks = {}
 
     def register_message(self, selector, callback):
+        """
+        Registers a listener for a message selector.
+        The selector is how we call the first atom of a message.
+        An atom is a word. Atoms are separated by the space character.
+        """
         if type(callback) not in (types.FunctionType, types.MethodType):
-            raise TypeError("Callback '%s' is not callable" % repr(callback))    
+            raise TypeError("Callback '%s' is not callable" % repr(callback))
         self.callbacks[selector] = callback
 
 def create_FUDI_client(host, port, tcp=True):

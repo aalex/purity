@@ -48,6 +48,19 @@ class PurityClient(object):
         self._server_startup_deferred = None
         self.pd_pid = pd_pid # maybe None
 
+    def register_message(self, selector, callback):
+        """
+        Registers a listener for a message selector.
+        The selector is how we call the first atom of a message.
+        An atom is a word. Atoms are separated by the space character.
+
+        :param selector: str
+        :param callback: callable
+        @see purity.fudi.FUDIServerFactory.register_message
+        """
+        if self.fudi_server is not None: # TODO: more checking
+            self.fudi_server.register_message(selector, callback)
+
     def server_start(self):
         """ returns server """
         self._server_startup_deferred = defer.Deferred()
