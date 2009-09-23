@@ -69,6 +69,7 @@ class PurityClient(object):
         self.fudi_server.register_message("__ping__", self.on_ping)
         self.fudi_server.register_message("__confirm__", self.on_confirm)
         self.fudi_server.register_message("__first_connected__", self.on_first_connected)
+        self.fudi_server.register_message("__connected__", self.on_connected)
         reactor.listenTCP(self.receive_port, self.fudi_server)
         #return self.fudi_server
         # TODO: add a timeout to this callback
@@ -111,9 +112,17 @@ class PurityClient(object):
         is ready and can send FUDI message to Python.
         """
         if VERBOSE:
-            print "received __connected__", args
+            print "received __first_connected__", args
         self._server_startup_deferred.callback(self.fudi_server)
     
+    def on_connected(self, protocol, *args):
+        """ 
+        Receives FUDI __connected__ when the Pure Data application 
+        connects or re-connects after a disconnection.
+        """
+        if VERBOSE:
+            print "received __connected__", args
+
     def on_client_connected(self, protocol):
         """ Client can send messages to Pure Data """
         self.client_protocol = protocol

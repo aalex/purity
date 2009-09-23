@@ -22,6 +22,14 @@
 #
 """
 Tools to create Pure Data objects and subpatches.
+
+This is meant to be used by any network library. The FUDI protocol 
+is in a separate module and is not used here. 
+
+See the client module for an implementation of this using the FUDI 
+protocol for Twisted.
+
+One could write a non-asynchronous version of this. (no network here)
 """
 #TODO: rename this file to patch.py
 import random 
@@ -57,9 +65,20 @@ class IElement(interface.Interface):
 
     def get_fudi(self):
         """
-        Returns a (Python) list of lists of (string) atoms. 
-        A FUDI creation message.
-        That list must then be converted to real ASCII fudi using the fudi module.
+        Returns a (Python) list of lists of (python-typed) atoms, or just a 
+        list of python-typed atoms. 
+        
+        What I mean by "python-typed" is the built-in python types, such as
+        int, str, float, bool. 
+        
+        It returns the FUDI message needed to create the element, and
+        maybe its sub-elements. A FUDI creation message.
+        
+        If it is a SubPatch, it returns a list of lists. (2D)
+        Elements such as Obj and Msg return a one-dimension list. (1D)
+
+        That list must then be converted to real ASCII fudi using the 
+        fudi module.
         """
         pass
 
@@ -76,6 +95,9 @@ class Obj(object):
     """
     interface.implements(IElement)
     def __init__(self, name, *args, **keywords):
+        """
+        Keywords: pos, x, y
+        """
         self.parent = None
         self.name = name
         self.args = args
@@ -87,8 +109,10 @@ class Obj(object):
         if keywords.has_key("y"):
             self.pos[1] = keywords["y"]
 
-
     def get_fudi(self):
+        """
+        Returns a list of (python-typed) atoms.
+        """
         li = ["obj", self.pos[0], self.pos[1], self.name]
         li.extend(self.args)
         return li
@@ -105,7 +129,10 @@ class Msg(object):
     """
     # TODO: escape characters such as ","
     interface.implements(IElement)
-    def __init__(self, name, *args, **keywords):
+    def __init__(self, *args, **keywords):
+        """
+        Keywords: pos, x, y
+        """
         self.parent = None
         self.args = args
         self.pos = [0, 0]
@@ -117,6 +144,9 @@ class Msg(object):
             self.pos[1] = keywords["y"]
 
     def get_fudi(self):
+        """
+        Returns a list of (python-typed) atoms.
+        """
         li = ["msg", self.pos[0], self.pos[1]]
         li.extend(self.args)
         return li
@@ -255,12 +285,22 @@ class SubPatch(object):
         obj = Obj(name, *args, **keywords)
         return self._add_object(obj)
 
+    def msg(self, *args, **keywords):
+        """
+        Adds an message box to the supatch.
+        Factory that wraps the Msg constructor.
+        @return Msg instance.
+        """
+        # we just put it in the self.objects list for convenience
+        msg = Msg(*args, **keywords)
+        return self._add_object(msg)
+
     def _add_object(self, obj):
         """
         Common to self.obj(), self.subpatch() and self.receive(). 
         """
         obj.id = len(self.objects)
-        pos = _gen_position(self)
+        pos = _gen_position(self) # this is where position is decided.
         obj.set_parent(self)
         obj.set_position(*pos)
         self.objects.append(obj)

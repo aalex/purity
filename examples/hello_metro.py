@@ -41,10 +41,15 @@ def creation_callback(fudi_client):
     tgl = patch.obj("tgl")
     metro = patch.obj("metro", 500)
     bang = patch.obj("bng")
+    msg = patch.msg("world")
+    printer = patch.obj("print", "hello")
     # connections
     patch.connect(r, 0, tgl, 0)
     patch.connect(tgl, 0, metro, 0)
     patch.connect(metro, 0, bang, 0)
+    patch.connect(bang, 0, msg, 0)
+    patch.connect(msg, 0, printer, 0)
+
     # send messages
     client.create_patch(fudi_client, main_patch)
     print "sent FUDI message:", "startme", 1
