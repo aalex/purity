@@ -99,6 +99,34 @@ class Obj(object):
     def set_position(self, x, y):
         self.pos = [x, y]
 
+class Msg(object):
+    """
+    Pure Data message box.
+    """
+    # TODO: escape characters such as ","
+    interface.implements(IElement)
+    def __init__(self, name, *args, **keywords):
+        self.parent = None
+        self.args = args
+        self.pos = [0, 0]
+        if keywords.has_key("pos"):
+            self.pos = keywords["pos"]
+        if keywords.has_key("x"):
+            self.pos[0] = keywords["x"]
+        if keywords.has_key("y"):
+            self.pos[1] = keywords["y"]
+
+    def get_fudi(self):
+        li = ["msg", self.pos[0], self.pos[1]]
+        li.extend(self.args)
+        return li
+    
+    def set_parent(self, obj):
+        self.parent = obj
+
+    def set_position(self, x, y):
+        self.pos = [x, y]
+
 class Receive(Obj):
     """
     The [receive] Pure Data object.
@@ -153,6 +181,8 @@ class SubPatch(object):
     The default name is "__main__" for the [pd __main__] subpatch.
     It can be found in purepy/dynamic_patch.pd
     """
+    #TODO: add msg method.
+    #TODO: allow to connect message boxes
     interface.implements(IElement)
     def __init__(self, name="__main__", visible=False):
         self.parent = None
