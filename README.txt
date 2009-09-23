@@ -41,9 +41,9 @@ Install Purity and start the example in a terminal window::
 
   mkdir -p ~/src
   cd ~/src/
-  hg clone https://python-purity.googlecode.com/hg/ python-purity  
-  cd python-purity/
+  hg clone http://bitbucket.org/aalex/purity purity
+  cd purity/
   sudo python setup.py build
   sudo python setup.py install --prefix=/usr/local
-  ./scripts/purity-example.py
+  ./examples/hello_metro.py
 
