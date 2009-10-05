@@ -32,6 +32,8 @@ For developpers::
   sudo python setup.py develop --prefix=/usr/local
   sudo python setup.py develop --prefix=/usr/local --uninstall
 """
+__version__ = "0.1.1"
+DOWNLOAD = "purity-%s.tar.gz" % (__version__)
 try:
     from setuptools import find_packages
     from setuptools import setup
@@ -41,21 +43,37 @@ except ImportError, e:
 
 setup(
     name = "purity",
-    version = "0.1.1",
+    version = __version__,
     author = "Alexandre Quessy",
     author_email = "alexandre@quessy.net",
-    url = "http://alexandre.quessy.net/",
-    description = "Purity dynamic patching library for Pure Data.",
-    long_description = """Python asynchronous tools for writing audio graphs dynamically.""",
+    url = "http://wiki.dataflow.ws/Purity",
+    description = "Purity dynamic patching library for Pure Data in Python.",
+    long_description = """Purity is a Python library for Pure Data dynamic patching. The idea is to be able to harness the power of Pure Data for audio programming without having to use its graphical interface. Python's clear and intuitive syntax can be used with profit in order to create intricate patches with advanced string handling, graphical user interfaces and asynchronous network operations. Purity uses Twisted, an event-driven Python framework.
+    """,
     install_requires = ["twisted"], 
-    scripts = ["scripts/purity-example.py"], 
+    #scripts = ["bin/purity-example.py"], 
     license = "GPL",
     platforms = ["any"],
     zip_safe = False,
     packages = ['purity'],
     package_data = {
-        "":["*.ttf", "*.rst", "*.png", "*.jpg", "*.pd"]
-    }
+        #"":["*.ttf", "*.rst", "*.png", "*.jpg", "*.pd"]
+        "":["*.pd"]
+    },
+    download_url = "http://alexandre.quessy.net/static/purity/%s" % (DOWNLOAD),
+    keywords = [], #TODO
+    classifiers = [
+        "Development Status :: 3 - Alpha", # api will change !
+        "Framework :: Twisted",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: GNU General Public License (GPL)",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2.5",
+        "Topic :: Multimedia :: Sound/Audio :: Sound Synthesis",
+        "Topic :: Multimedia :: Sound/Audio :: Analysis",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        ],
     )
 
 #test_suite='nose.collector',
