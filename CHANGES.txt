@@ -1,0 +1,8 @@
+purity version 0.1
+------------------
+ * Moved purity to its own package, along with the fudi protocol.
+ * Simplified the conversion from Python list to actual ASCII FUDI strings.
+0.1.1
+-----
+ * added files to be pypi-compliant.
+

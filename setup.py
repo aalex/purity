@@ -41,7 +41,7 @@ except ImportError, e:
 
 setup(
     name = "purity",
-    version = "0.1",
+    version = "0.1.1",
     author = "Alexandre Quessy",
     author_email = "alexandre@quessy.net",
     url = "http://alexandre.quessy.net/",
