@@ -56,11 +56,12 @@ setup(
     platforms = ["any"],
     zip_safe = False,
     packages = ['purity', "purity/data"],
-    package_data = {
-        "purity":["data/*.pd"],
-        "":["*.pd"],
-        },
-    #"":["*.ttf", "*.rst", "*.png", "*.jpg", "*.pd"]
+    data_files=[('', ['purity/data/dynamic_patch.pd'])],
+    #package_data = {
+    #    "":["purity/data/dynamic_patch.pd"],
+    #    #"":["*.pd"],
+    #    },
+    ##"":["*.ttf", "*.rst", "*.png", "*.jpg", "*.pd"]
     download_url = "http://alexandre.quessy.net/static/purity/%s" % (DOWNLOAD),
     keywords = [], #TODO
     classifiers = [
