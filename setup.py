@@ -56,7 +56,8 @@ setup(
     platforms = ["any"],
     zip_safe = False,
     packages = ['purity', "purity/data"],
-    data_files=[('', ['purity/data/dynamic_patch.pd'])],
+    #data_files=[('', ['purity/data/dynamic_patch.pd'])],
+    package_data = {"":["*.pd"]},
     #package_data = {
     #    "":["purity/data/dynamic_patch.pd"],
     #    #"":["*.pd"],
