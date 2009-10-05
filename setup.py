@@ -55,11 +55,12 @@ setup(
     license = "GPL",
     platforms = ["any"],
     zip_safe = False,
-    packages = ['purity'],
+    packages = ['purity', "purity/data"],
     package_data = {
-        #"":["*.ttf", "*.rst", "*.png", "*.jpg", "*.pd"]
-        "":["*.pd"]
-    },
+        "purity":["data/*.pd"],
+        "":["*.pd"],
+        },
+    #"":["*.ttf", "*.rst", "*.png", "*.jpg", "*.pd"]
     download_url = "http://alexandre.quessy.net/static/purity/%s" % (DOWNLOAD),
     keywords = [], #TODO
     classifiers = [
