@@ -96,7 +96,7 @@ class PureData(object):
         self.nogui = nogui
         self.blocking=blocking
         if patch is None: # default patch:
-            patch = os.path.join(os.path.dirname(purity.__file__), "dynamic_patch.pd")
+            patch = os.path.join(os.path.dirname(purity.__file__), "data", "dynamic_patch.pd")
         self.patch = patch
         # ready to go
 

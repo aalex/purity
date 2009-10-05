@@ -209,7 +209,7 @@ class SubPatch(object):
     Pure Data Subpatch. 
     
     The default name is "__main__" for the [pd __main__] subpatch.
-    It can be found in purepy/dynamic_patch.pd
+    It can be found in purepy/data/dynamic_patch.pd
     """
     #TODO: add msg method.
     #TODO: allow to connect message boxes
