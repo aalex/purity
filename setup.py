@@ -33,13 +33,19 @@ For developpers::
   sudo python setup.py develop --prefix=/usr/local --uninstall
 """
 __version__ = "0.1.1"
-DOWNLOAD = "purity-%s.tar.gz" % (__version__)
-try:
-    from setuptools import find_packages
-    from setuptools import setup
-except ImportError, e:
-    print("You must install python-setuptools.")
-    print("Such as using \"sudo apt-get install python-setuptools\"")
+DOWNLOAD_DIR = "http://alexandre.quessy.net/static/purity"
+DOWNLOAD_FILE = "purity-%s.tar.gz" % (__version__)
+
+from distutils.core import setup
+
+#try:
+#    from setuptools import find_packages
+#    from setuptools import setup
+#except ImportError, e:
+#    print("You must install python-setuptools.")
+#    print("Such as using \"sudo apt-get install python-setuptools\"")
+#    import sys
+#    sys.exit(1)
 
 setup(
     name = "purity",
@@ -50,20 +56,22 @@ setup(
     description = "Purity dynamic patching library for Pure Data in Python.",
     long_description = """Purity is a Python library for Pure Data dynamic patching. The idea is to be able to harness the power of Pure Data for audio programming without having to use its graphical interface. Python's clear and intuitive syntax can be used with profit in order to create intricate patches with advanced string handling, graphical user interfaces and asynchronous network operations. Purity uses Twisted, an event-driven Python framework.
     """,
-    install_requires = ["twisted"], 
+    #install_requires = ["twisted"], 
     #scripts = ["bin/purity-example.py"], 
     license = "GPL",
     platforms = ["any"],
-    zip_safe = False,
-    packages = ['purity', "purity/data"],
+    #zip_safe = False,
+    packages = ['purity', "purity/data"],# "purity/data"],
     #data_files=[('', ['purity/data/dynamic_patch.pd'])],
-    package_data = {"":["*.pd"]},
+    #package_data = {"":["*.pd"]},
+    include_package_data=True,
+    #package_data = {'purity':['data/*.pd']},
     #package_data = {
     #    "":["purity/data/dynamic_patch.pd"],
     #    #"":["*.pd"],
     #    },
     ##"":["*.ttf", "*.rst", "*.png", "*.jpg", "*.pd"]
-    download_url = "http://alexandre.quessy.net/static/purity/%s" % (DOWNLOAD),
+    download_url = "%s/%s" % (DOWNLOAD_DIR, DOWNLOAD_FILE),
     keywords = [], #TODO
     classifiers = [
         "Development Status :: 3 - Alpha", # api will change !
