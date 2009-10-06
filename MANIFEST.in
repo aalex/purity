@@ -1,4 +1,4 @@
-resursive-include *.pd
+recursive-include purity/data *.pd
 recursive-include examples *.txt *.py
 recursive-include doc *.txt *.py *.html *.rst
 
