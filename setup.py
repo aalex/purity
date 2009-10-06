@@ -61,7 +61,7 @@ setup(
     license = "GPL",
     platforms = ["any"],
     #zip_safe = False,
-    packages = ['purity', "purity/data"],# "purity/data"],
+    packages = ['purity', "purity/data", "purity/test"],# "purity/data"],
     #data_files=[('', ['purity/data/dynamic_patch.pd'])],
     #package_data = {"":["*.pd"]},
     include_package_data=True,
