@@ -30,6 +30,7 @@ import purity
 from twisted.internet import defer
 
 VERBOSE = True
+DYNAMIC_PATCH = os.path.join(os.path.dirname(purity.__file__), "data", "dynamic_patch.pd")
 
 class ChildKilledError(Exception):
     """Raised when child is killed"""
@@ -87,6 +88,7 @@ class PureData(object):
     Launches Pure Data software. 
     """
     def __init__(self, rate=48000, listdev=True, inchannels=2, outchannels=2, verbose=True, driver="jack", nogui=False, blocking=True, patch=None):
+        global DYNAMIC_PATCH
         self.rate = rate
         self.listdev = listdev
         self.inchannels = inchannels
@@ -95,9 +97,9 @@ class PureData(object):
         self.driver = driver
         self.nogui = nogui
         self.blocking=blocking
-        if patch is None: # default patch:
-            patch = os.path.join(os.path.dirname(purity.__file__), "data", "dynamic_patch.pd")
         self.patch = patch
+        if self.patch is None: # default patch:
+            self.patch = DYNAMIC_PATCH
         # ready to go
 
     def start(self):
@@ -118,6 +120,7 @@ class PureData(object):
         command += " -inchannels %d" % (self.inchannels)
         command += " -outchannels %d" % (self.outchannels)
         command += " %s" % (self.patch)
+        #TODO: use ProcessProtocol
         run_command(command, variables_dict={}, die_on_ctrl_c=True)
         return True # return defer.succeed(True)
         
