@@ -49,10 +49,10 @@ class Logger(object):
     def debug(self, txt):
         self._log(txt, 5)
     def _log(self, txt, level):
-        if level <= self.level):
+        if level <= self.level:
             print(txt) # for now
 # global var
-log = Logger(5)
+log = Logger(4)
 
 class AsynchronousError(Exception):
     """
