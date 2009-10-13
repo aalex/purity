@@ -27,6 +27,7 @@ import os
 import sys
 import subprocess
 import purity
+from purity import process
 from twisted.internet import defer
 
 VERBOSE = True
@@ -87,7 +88,7 @@ class PureData(object):
     """
     Launches Pure Data software. 
     """
-    def __init__(self, rate=48000, listdev=True, inchannels=2, outchannels=2, verbose=True, driver="jack", nogui=False, blocking=True, patch=None):
+    def __init__(self, rate=48000, listdev=True, inchannels=2, outchannels=2, verbose=True, driver="jack", nogui=False, blocking=True, patch=None, process_tool="subprocess"):
         global DYNAMIC_PATCH
         self.rate = rate
         self.listdev = listdev
@@ -100,6 +101,8 @@ class PureData(object):
         self.patch = patch
         if self.patch is None: # default patch:
             self.patch = DYNAMIC_PATCH
+        self.process_tool = process_tool
+        self._process_manager = None
         # ready to go
 
     def start(self):
@@ -121,8 +124,21 @@ class PureData(object):
         command += " -outchannels %d" % (self.outchannels)
         command += " %s" % (self.patch)
         #TODO: use ProcessProtocol
-        run_command(command, variables_dict={}, die_on_ctrl_c=True)
-        return True # return defer.succeed(True)
+        print("Using process tool %s" % (self.process_tool))
+        if self.process_tool == "subprocess":
+            run_command(command, variables_dict={}, die_on_ctrl_c=True)
+            #return True 
+            return defer.succeed(True)
+        elif self.process_tool == "manager":
+            #TODO: env vars
+            self._process_manager = process.ProcessManager(
+                name="puredata", 
+                command=command.split(),
+                verbose=True
+                )
+            return self._process_manager.start()
+        else:
+            raise NotImplementedError("no such process tool")
         
     def stop(self):
         raise NotImplementedError("This is still to be done.")
@@ -136,7 +152,14 @@ def fork_and_start_pd(**kwargs):
     pid = os.fork()
     if pid == 0: # child
         pd = PureData(**kwargs)
-        success = pd.start()
+        success = pd.start() # a deferred
         return 0
     else: # parent
         return pid
+
+def run_pd_manager(**kwargs):
+    """
+    Returns a Deferred.
+    """
+    return PureData(process_tool="manager", **kwargs).start()
+

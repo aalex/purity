@@ -186,39 +186,6 @@ class PurityClient(object):
         for mess in mess_list:
             self.send_message(*mess)
 
-def create_simple_client(**server_kwargs):
-    """
-    Creates a purity server (Pure Data process manager)
-    and a purity client. 
-    """
-    # TODO: receive message from pd to know when it is really ready.
-    def _callback(protocol, my_deferred, the_client):
-        my_deferred.callback(the_client)
-        return True
-    
-    def _connected(the_server, my_deferred, the_client):
-        # time.sleep(1.0) # Wait until pd is ready. #TODO: use netsend instead.
-        c_deferred = the_client.client_start() # start it
-        c_deferred.addCallback(_callback, my_deferred, the_client)
-    
-    my_deferred = defer.Deferred()
-    pid = server.fork_and_start_pd(**server_kwargs)
-    if pid != 0:
-        the_client = PurityClient(
-            receive_port=15555, 
-            send_port=17777, 
-            quit_after_message=False, 
-            pd_pid=pid,
-            use_tcp=True) # create the client
-        s_deferred = the_client.server_start()
-        # TODO: use deferred with __connected__ instead of callLater.
-        #reactor.callLater(5.0, _later, my_deferred, the_client)
-        s_deferred.addCallback(_connected, my_deferred, the_client)
-    else:
-        sys.exit(0) # do not do anything else here !
-    return my_deferred
-
-
 def create_patch(fudi_client, patch):
     """
     Sends the creation messages for a subpatch.
@@ -230,4 +197,87 @@ def create_patch(fudi_client, patch):
         if VERBOSE:
             print("%s" % (mess))
         fudi_client.send_message(*mess)
+
+def _create_forked_client(**server_kwargs):
+    # technique 1: using fork and exec
+    # TODO: receive message from pd to know when it is really ready.
+    def _client_started(protocol, my_deferred, the_client):
+        """
+        Called when purity received __first_connected__
+        """
+        print("_client_started")
+        my_deferred.callback(the_client)
+        return True
+
+    def _server_started(the_server, my_deferred, the_client):
+        """
+        called when pd and purity are connected.
+        """
+        print("_server_started")
+        # the_server is useless here.
+        c_deferred = the_client.client_start() # start it
+        c_deferred.addCallback(_client_started, my_deferred, the_client)
+
+    my_deferred = defer.Deferred()
+    pid = server.fork_and_start_pd(**server_kwargs)
+    if pid != 0:
+        the_client = PurityClient(
+            receive_port=15555, 
+            send_port=17777, 
+            quit_after_message=False, 
+            pd_pid=pid,
+            use_tcp=True) # create the client
+        s_deferred = the_client.server_start()
+        s_deferred.addCallback(_server_started, my_deferred, the_client)
+    else:
+        sys.exit(0) # do not do anything else here !
+
+def _create_managed_client(**server_kwargs):
+    # technique 2: using a process protocol. (much better)
+    def _sender_started(protocol, my_deferred, the_client):
+        """
+        Called when purity received __first_connected__
+        """
+        print("_client_started")
+        my_deferred.callback(the_client)
+        return True
+    
+    def _receiver_started(the_server, my_deferred, the_client):
+        """
+        called when pd and purity are connected.
+        """
+        print("_server_started")
+        # the_server is useless here.
+        c_deferred = the_client.client_start() # start it
+        c_deferred.addCallback(_sender_started, my_deferred, the_client)
+
+    def _manager_started(result, my_deferred):
+        print("_manager_started")
+        the_client = PurityClient(
+            receive_port=15555, 
+            send_port=17777, 
+            quit_after_message=False) # create the client
+        print("starting receiver")
+        s_deferred = the_client.server_start() #TODO: start_listener()
+        print("will start sender")
+        s_deferred.addCallback(_receiver_started, my_deferred, the_client)
+        
+    my_deferred = defer.Deferred()
+    manager_deferred = server.run_pd_manager(**server_kwargs)
+    manager_deferred.addCallback(_manager_started, my_deferred)
+    return my_deferred
+
+
+def create_simple_client(**server_kwargs):
+    """
+    Creates a purity server (Pure Data process manager)
+    and a purity client. 
+    """
+    #USE_MANAGER = True
+    USE_MANAGER = False # XXX important 
+    # technique 1: using fork and exec
+    if not USE_MANAGER:
+        return _create_forked_client(**server_kwargs)
+    else:
+        return _create_managed_client(**server_kwargs)
 
