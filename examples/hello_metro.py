@@ -29,7 +29,7 @@ from purity import canvas
 from twisted.internet import reactor
 
 
-def creation_callback(fudi_client):
+def creation_callback(purity_client):
     """
     :param client: PurityClient instance.
     """
@@ -50,10 +50,12 @@ def creation_callback(fudi_client):
     patch.connect(bang, 0, msg, 0)
     patch.connect(msg, 0, printer, 0)
 
+    print("purity_client: %s" % (purity_client))
     # send messages
-    client.create_patch(fudi_client, main_patch)
+    #client.create_patch(fudi_client, main_patch) # deprecated. use form below
+    purity_client.create_patch(main_patch)
     print "sent FUDI message:", "startme", 1
-    fudi_client.send_message("startme", 1)
+    purity_client.send_message("startme", 1)
 
 if __name__ == "__main__":
     deferred = client.create_simple_client()

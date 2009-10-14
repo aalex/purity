@@ -128,7 +128,7 @@ class PureData(object):
         if self.process_tool == "subprocess":
             run_command(command, variables_dict={}, die_on_ctrl_c=True)
             #return True 
-            return defer.succeed(True)
+            return defer.succeed(True) # right now
         elif self.process_tool == "manager":
             #TODO: env vars
             self._process_manager = process.ProcessManager(
@@ -136,7 +136,9 @@ class PureData(object):
                 command=command.split(),
                 verbose=True
                 )
-            return self._process_manager.start()
+            d = self._process_manager.start() # deferred
+            print("process manager deferred: %s" % (d))
+            return d
         else:
             raise NotImplementedError("no such process tool")
         
@@ -148,7 +150,6 @@ def fork_and_start_pd(**kwargs):
     Please exit the program if pid value is 0 
     We return the pid 
     """
-    # TODO: Also create a twisted ProcessProtocol for Pure Data.
     pid = os.fork()
     if pid == 0: # child
         pd = PureData(**kwargs)
@@ -160,6 +161,20 @@ def fork_and_start_pd(**kwargs):
 def run_pd_manager(**kwargs):
     """
     Returns a Deferred.
+    Creates a twisted ProcessProtocol for Pure Data.
     """
-    return PureData(process_tool="manager", **kwargs).start()
+    def _success(result, _pd):
+        print("Success. This should be a purity client: %s" % (result))
+        #return result # pass it to next callback
+        return _pd # pass the PureData Manager to the next callback
+    def _failure(reason):
+        print(reason.getErrorMessage())
+        return reason # pass it to next errback
+    print("starting as a manager")
+    _pd = PureData(process_tool="manager", **kwargs)
+    d = _pd.start()
+    d.addCallback(_success, _pd)
+    d.addErrback(_failure)
+    print("pd manager deferred: %s" % (d))
+    return d
 

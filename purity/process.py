@@ -425,7 +425,7 @@ class ProcessManager(object):
             else:
                 err_msg += "It state is %s. " % (self.state)
             err_msg += "\nHere is its output:\n %s" % (self.format_output_when_crashed(output))
-            self.subject.notify(None, err_msg, "start_error")
+            #self.subject.notify(None, err_msg, "start_error")
             return failure.Failure(ManagedProcessError(err_msg)) # Important to return the failure
 
     def format_output_when_crashed(self, output):
