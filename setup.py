@@ -64,7 +64,7 @@ setup(
     packages = ['purity', "purity/data", "purity/test"],# "purity/data"],
     #data_files=[('', ['purity/data/dynamic_patch.pd'])],
     #package_data = {"":["*.pd"]},
-    include_package_data=True,
+    #include_package_data=True, XXX
     #package_data = {'purity':['data/*.pd']},
     #package_data = {
     #    "":["purity/data/dynamic_patch.pd"],
