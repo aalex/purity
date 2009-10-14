@@ -57,7 +57,6 @@ def creation_callback(purity_client):
     purity_client.send_message("startme", 1)
 
 if __name__ == "__main__":
-    import subprocess
     print("Starting purity !")
     deferred = client.create_simple_client()
     deferred.addCallback(creation_callback)
@@ -66,6 +65,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Ctrl-C has been pressed.")
         reactor.stop()
+    import subprocess
     print("Killing all running pd processes.") # FIXME
     subprocess.call("killall pd", shell=True)
 
