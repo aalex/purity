@@ -1,8 +1,19 @@
-purity version 0.1
+purity changes log
 ------------------
- * Moved purity to its own package, along with the fudi protocol.
- * Simplified the conversion from Python list to actual ASCII FUDI strings.
+Changes are listed from most recent to oldest.
+
+
+0.2.0 (October 14th 2009)
+-------------------------
+ * using a Twisted process protocol to launch pure data.
+ * pure data process doesnt quit when its parent quits since it is composed of many processes in fact.
+
 0.1.1
 -----
  * added files to be pypi-compliant.
+
+0.1.0
+-----
+ * Moved purity to its own package, along with the fudi protocol.
+ * Simplified the conversion from Python list to actual ASCII FUDI strings.
 
