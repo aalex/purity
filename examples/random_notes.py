@@ -67,7 +67,7 @@ def audio_patch(purity_client):
         purity_client.send_message("note", note, delay) # ms
     
     # send messages
-    client.create_patch(purity_client, main)
+    purity_client.create_patch(main)
     purity_client.send_message("pd", "dsp", 1)
     looping_call = task.LoopingCall(send_random_note, (purity_client))
     looping_call.start(0.15)
@@ -80,4 +80,7 @@ if __name__ == "__main__":
         reactor.run()
     except KeyboardInterrupt:
         print("Quitting.")
+    import subprocess
+    print("Killing all running pd processes.") # FIXME
+    subprocess.call("killall pd", shell=True)
 

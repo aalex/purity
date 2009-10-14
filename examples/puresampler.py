@@ -271,5 +271,11 @@ if __name__ == "__main__":
     deferred = client.create_simple_client()
     deferred.addCallback(sampler.creation_callback)
     app = SimpleSamplerApp(sampler)
-    reactor.run()
+    try:
+        reactor.run()
+    except KeyboardError:
+        print("Ctrl-C has been pressed.")
+    import subprocess
+    print("Killing all running pd processes.") # FIXME
+    subprocess.call("killall pd", shell=True)
 
