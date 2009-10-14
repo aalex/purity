@@ -33,56 +33,56 @@ from twisted.internet import defer
 VERBOSE = True
 DYNAMIC_PATCH = os.path.join(os.path.dirname(purity.__file__), "data", "dynamic_patch.pd")
 
-class ChildKilledError(Exception):
-    """Raised when child is killed"""
-    pass
+#class ChildKilledError(Exception):
+#    """Raised when child is killed"""
+#    pass
 
-def run_command(command_str, variables_dict={}, die_on_ctrl_c=True):
-    """
-    Creates and launches a process. 
-
-    Uses subprocess to launch a process. Blocking.
-    When called, might throw a OSError or ValueError.
-    Throws a ChildKilledError if ctrl-C is pressed.
-    """
-    global VERBOSE
-    retcode = None
-    environment = {}
-    environment.update(os.environ)
-    environment.update(variables_dict)
-    try:
-        if VERBOSE:
-            print("--------")
-        print("COMMAND: %s" % (command_str))
-        p = subprocess.Popen(command_str, shell=True, env=environment)
-        print("PID: %s" % (p.pid))
-        if VERBOSE:
-            print("ENV: %s" % (str(variables_dict)))
-            print("--------")
-        retcode = p.wait() # blocking
-        if retcode < 0:
-            err = "Child was terminated by signal %d\n" % (retcode)
-            sys.stderr.write(err)
-        else:
-            err = "Child returned %s\n" % (retcode)
-            sys.stderr.write(err)
-    except OSError, e:
-        err = "Execution of child failed: %s\n" % (e.message)
-        sys.stderr.write(err)
-        retcode = 1
-    except KeyboardInterrupt, e:
-        if die_on_ctrl_c:
-            print("Ctrl-C has been pressed in a slave terminal. Dying.")
-            sys.exit(1)
-        else:
-            raise ChildKilledError("Ctrl-C has been pressed in the master's terminal and caught by a worker.")
-    except ValueError, e:
-        err = "Wrong arguments to subprocess.Popen: %s\n" % (e.message)
-        sys.stderr.write(err)
-        raise
-    #else:
-        #print("Success\n") # retrcode is p.wait() return val
-    return retcode
+#def run_command(command_str, variables_dict={}, die_on_ctrl_c=True):
+#    """
+#    Creates and launches a process. 
+#
+#    Uses subprocess to launch a process. Blocking.
+#    When called, might throw a OSError or ValueError.
+#    Throws a ChildKilledError if ctrl-C is pressed.
+#    """
+#    global VERBOSE
+#    retcode = None
+#    environment = {}
+#    environment.update(os.environ)
+#    environment.update(variables_dict)
+#    try:
+#        if VERBOSE:
+#            print("--------")
+#        print("COMMAND: %s" % (command_str))
+#        p = subprocess.Popen(command_str, shell=True, env=environment)
+#        print("PID: %s" % (p.pid))
+#        if VERBOSE:
+#            print("ENV: %s" % (str(variables_dict)))
+#            print("--------")
+#        retcode = p.wait() # blocking
+#        if retcode < 0:
+#            err = "Child was terminated by signal %d\n" % (retcode)
+#            sys.stderr.write(err)
+#        else:
+#            err = "Child returned %s\n" % (retcode)
+#            sys.stderr.write(err)
+#    except OSError, e:
+#        err = "Execution of child failed: %s\n" % (e.message)
+#        sys.stderr.write(err)
+#        retcode = 1
+#    except KeyboardInterrupt, e:
+#        if die_on_ctrl_c:
+#            print("Ctrl-C has been pressed in a slave terminal. Dying.")
+#            sys.exit(1)
+#        else:
+#            raise ChildKilledError("Ctrl-C has been pressed in the master's terminal and caught by a worker.")
+#    except ValueError, e:
+#        err = "Wrong arguments to subprocess.Popen: %s\n" % (e.message)
+#        sys.stderr.write(err)
+#        raise
+#    #else:
+#        #print("Success\n") # retrcode is p.wait() return val
+#    return retcode
 
 class PureData(object):
     """
@@ -112,8 +112,6 @@ class PureData(object):
         Returns True
         Blocking.
         """
-        #TODO: return a deferred.
-        #TODO: really wait until pd is started.
         command = "pd"
         if self.driver == "jack":
             command += " -jack"
@@ -123,8 +121,7 @@ class PureData(object):
         command += " -inchannels %d" % (self.inchannels)
         command += " -outchannels %d" % (self.outchannels)
         command += " %s" % (self.patch)
-        #TODO: use ProcessProtocol
-        print("Using process tool %s" % (self.process_tool))
+        #print("Using process tool %s" % (self.process_tool))
         if self.process_tool == "subprocess":
             run_command(command, variables_dict={}, die_on_ctrl_c=True)
             #return True 
@@ -137,7 +134,7 @@ class PureData(object):
                 verbose=True
                 )
             d = self._process_manager.start() # deferred
-            print("process manager deferred: %s" % (d))
+            # print("process manager deferred: %s" % (d))
             return d
         else:
             raise NotImplementedError("no such process tool")
@@ -145,18 +142,18 @@ class PureData(object):
     def stop(self):
         raise NotImplementedError("This is still to be done.")
 
-def fork_and_start_pd(**kwargs):
-    """
-    Please exit the program if pid value is 0 
-    We return the pid 
-    """
-    pid = os.fork()
-    if pid == 0: # child
-        pd = PureData(**kwargs)
-        success = pd.start() # a deferred
-        return 0
-    else: # parent
-        return pid
+#def fork_and_start_pd(**kwargs):
+#    """
+#    Please exit the program if pid value is 0 
+#    We return the pid 
+#    """
+#    pid = os.fork()
+#    if pid == 0: # child
+#        pd = PureData(**kwargs)
+#        success = pd.start() # a deferred
+#        return 0
+#    else: # parent
+#        return pid
 
 def run_pd_manager(**kwargs):
     """
@@ -164,17 +161,17 @@ def run_pd_manager(**kwargs):
     Creates a twisted ProcessProtocol for Pure Data.
     """
     def _success(result, _pd):
-        print("Success. This should be a purity client: %s" % (result))
+        #print("Success. This should be a purity client: %s" % (result))
         #return result # pass it to next callback
         return _pd # pass the PureData Manager to the next callback
     def _failure(reason):
-        print(reason.getErrorMessage())
+        #print(reason.getErrorMessage())
         return reason # pass it to next errback
-    print("starting as a manager")
+    #print("starting as a manager")
     _pd = PureData(process_tool="manager", **kwargs)
     d = _pd.start()
     d.addCallback(_success, _pd)
     d.addErrback(_failure)
-    print("pd manager deferred: %s" % (d))
+    #print("pd manager deferred: %s" % (d))
     return d
 

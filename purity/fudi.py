@@ -36,7 +36,8 @@ from twisted.internet.protocol import ClientFactory
 from twisted.protocols import basic
 from twisted.python import log
 
-VERBOSE = False
+VERYVERBOSE = False
+VERBOSE = True # prints only fudi messages in ascii
 
 def to_fudi(selector, *atoms):
     """
@@ -44,7 +45,7 @@ def to_fudi(selector, *atoms):
     :param data: list of basic types variables.
     Public FUDI message converter
     """
-    # if VERBOSE:
+    # if VERYVERBOSE:
     #     print "FUDI: to_fudi", selector, atoms
     txt = str(selector)
     for atom in atoms:
@@ -64,14 +65,14 @@ class FUDIProtocol(basic.LineReceiver):
     delimiter = ';'
 
     def lineReceived(self, data):
-        if VERBOSE:
+        if VERYVERBOSE:
             print "FUDI: data:", data
         try:
             message = data.split(";")[0].strip()
         except KeyError:
             log.msg("Got a line without trailing semi-colon.")
         else:
-            if VERBOSE:
+            if VERYVERBOSE:
                 print "FUDI: message:", message
             atoms = message.split()
             if len(atoms) > 0:
@@ -79,7 +80,7 @@ class FUDIProtocol(basic.LineReceiver):
                 selector = atoms[0]
                 for atom in atoms[1:]:
                     atom = atom.strip()
-                    if VERBOSE:
+                    if VERYVERBOSE:
                         print "FUDI: > atom:", atom
                     if atom.isdigit():
                         output.append(int(atom))
@@ -90,7 +91,7 @@ class FUDIProtocol(basic.LineReceiver):
                         except ValueError:
                             output.append(str(atom))
                 if self.factory.callbacks.has_key(selector):
-                    if VERBOSE:
+                    if VERYVERBOSE:
                         print "FUDI: Calling :", selector, output
                     try:
                         self.factory.callbacks[selector](self, *output)
@@ -105,11 +106,11 @@ class FUDIProtocol(basic.LineReceiver):
         Converts int, float, string to FUDI atoms and sends them.
         :param data: list of basic types variables.
         """
-        if VERBOSE:
+        if VERYVERBOSE:
             print "send_message", selector, atoms
         txt = to_fudi(selector, *atoms)
         if VERBOSE:
-            print "FUDI: sending", txt
+            print("FUDI: %s" % (txt.strip()))
         self.transport.write(txt)
 
 class FUDIServerFactory(Factory):
@@ -146,7 +147,7 @@ def create_FUDI_client(host, port, tcp=True):
     return deferred
 
 if __name__ == "__main__":
-    VERBOSE = True
+    VERYVERBOSE = True
 
     def ping(protocol, *args):
         print "received ping", args

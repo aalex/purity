@@ -377,7 +377,7 @@ class ProcessManager(object):
         self.stderr_logger.clear()
         self._process_protocol = ManagedProcessProtocol(self)
         if self.verbose:
-            print("Running command %s" % (str(self.command)))
+            print("Running command %s" % (str(" ".join(self.command))))
         try:
             proc_path = self.command[0]
             args = self.command

@@ -31,7 +31,9 @@ from purity import fudi
 from purity import server
 from purity import process
 
-VERBOSE = True
+VERBOSE = False
+VERYVERBOSE = False
+_pure_data_managers = [] # global list of ProcessManager instances.
 
 class PurityClient(object):
     """
@@ -48,6 +50,7 @@ class PurityClient(object):
         self.quit_after_message = quit_after_message
         self._server_startup_deferred = None
         self.pd_pid = pd_pid # maybe None
+        self._pure_data_launcher = None # purity.server.PureData object.
 
     def register_message(self, selector, callback):
         """
@@ -75,7 +78,8 @@ class PurityClient(object):
         self.fudi_server.register_message("__confirm__", self.on_confirm)
         self.fudi_server.register_message("__first_connected__", self.on_first_connected)
         self.fudi_server.register_message("__connected__", self.on_connected)
-        print("reactor.listenTCP %d %s" % (self.receive_port, self.fudi_server))
+        if VERBOSE:
+            print("reactor.listenTCP %d %s" % (self.receive_port, self.fudi_server))
         reactor.listenTCP(self.receive_port, self.fudi_server)
         #return self.fudi_server
         # TODO: add a timeout to this callback
@@ -99,7 +103,8 @@ class PurityClient(object):
         """ 
         Receives FUDI __pong__
         """
-        print "received __pong__", args
+        if VERBOSE:
+            print "received __pong__", args
         # print("stopping reactor")
         # reactor.stop()
 
@@ -148,8 +153,9 @@ class PurityClient(object):
         """ 
         Client cannot send data to pd 
         """
-        print "Error trying to connect.", failure
-        raise Exception("Could not connect to pd.... Dying.")
+        if VERBOSE:
+            print "Error trying to connect.", failure
+        raise Exception("Could not connect to pd.... Dying. %s" % (failure.getErrorMessage()))
         # print "stop"
         # reactor.stop()
     
@@ -158,27 +164,47 @@ class PurityClient(object):
         Quits server and client.
         :return deferred:
         """
-        deferred = defer.Deferred()
-        def _kill_server(deferred):
-            try:
-                sig = 9
-                os.kill(self.pd_pid, sig)
-                mess = "Killed Pure Data successfully."
-            except OSError, e:
-                mess = "Pure Data quit successfully."
-            deferred.callback(mess)
-        self.send_message("pd", "quit")
+        #deferred = defer.Deferred()
+        #def _kill_server(deferred):
+        #    try:
+        #        sig = 9
+        #        os.kill(self.pd_pid, sig)
+        #        mess = "Killed Pure Data successfully."
+        #    except OSError, e:
+        #        mess = "Pure Data quit successfully."
+        #    deferred.callback(mess)
+        #self.send_message("pd", "quit")
 
-        if self.pd_pid is not None:
-            reactor.callLater(0.5, _kill_server, deferred)
-        return deferred
+        #if self.pd_pid is not None:
+        #    reactor.callLater(0.5, _kill_server, deferred)
+        #return deferred
+        #FIXME : stopping pd process, buts still need to cleanup TCP listener
+        if self._pure_data_launcher is not None:
+            return self._pure_data_launcher._process_manager.stop()
+        else:
+            return defer.succeed(True)
+
+    def quit_and_stop_reactor(self):
+        """
+        Wraps quit() and stops the reactor once Pure Data has quit.
+        
+        Typically, you would catch a KeyboardInterrupt and call this.
+        """
+        def _ok(result, d):
+            reactor.stop()
+            return result
+        def _err(reason, d):
+            reactor.stop()
+            return reason
+        d = self.quit()
+        return d
 
     def send_message(self, selector, *args):
         """ 
         Send a message to pure data 
         """
         if self.client_protocol is not None:
-            if VERBOSE:
+            if VERYVERBOSE:
                 print("Purity sends %s %s" % (selector, str(args)))
             # if fudi.VERBOSE:
             # print("sending %s" % (str(args)))
@@ -268,7 +294,8 @@ def _create_managed_client(**server_kwargs):
     """
     # technique 2: using a process protocol. (much better)
     def _eb_sender_error(reason, my_deferred):
-        print("Could not start purity sender: %s" % (reason.getErrorMessage()))
+        if VERBOSE:
+            print("Could not start purity sender: %s" % (reason.getErrorMessage()))
         my_deferred.errback(reason)
         #return reason #propagate error
 
@@ -276,7 +303,8 @@ def _create_managed_client(**server_kwargs):
         """
         Called when purity received __first_connected__
         """
-        print("purity sender started")
+        if VERBOSE:
+            print("purity sender started")
         my_deferred.callback(the_client)
         #return the_client # pass client to next deferred.
     
@@ -309,7 +337,8 @@ def _create_managed_client(**server_kwargs):
     # function body -------
     
     def _cb_both_started(result, my_deferred, purity_client):
-        print("Both Pure Data patch and Purity listener are started.")
+        if VERBOSE:
+            print("Both Pure Data patch and Purity listener are started.")
         sender_deferred = purity_client.start_purity_sender() 
         # start the fudi sender. should trigger its callback 
         # quite quickly is a [netreceives] is listening
@@ -317,19 +346,29 @@ def _create_managed_client(**server_kwargs):
         sender_deferred.addErrback(_eb_sender_error, my_deferred, purity_client)
     def _eb_both_error(reason, my_deferred, purity_client):
         my_deferred.errback(reason)
-
+    
+    def _cb_manager(result, purity_client):
+        # this is just to register the PureData manager to purity client.
+        global _pure_data_managers
+        _pd = result
+        _pure_data_managers.append(_pd._process_manager)
+        purity_client.pure_data_launcher = _pd
+        return result
     # ------------------------------
     my_deferred = defer.Deferred()
     purity_client = PurityClient(
         receive_port=15555, 
         send_port=17777, 
         quit_after_message=False) # create the client
-    print("created purity client: %s" % (purity_client))
-    print("starting purity receiver")
+
+    if VERBOSE: 
+        print("created purity client: %s" % (purity_client))
+        print("starting purity receiver")
     receiver_deferred = purity_client.start_purity_receiver() 
     #TODO: start_listener()
     #TODO : wait a bit here using a callLater ?
     manager_deferred = server.run_pd_manager(**server_kwargs) 
+    manager_deferred.addCallback(_cb_manager, purity_client)
     # result will be PureData instance. (with a _process_manager attribute)
     # but we do not care for now.
     dl = [receiver_deferred, manager_deferred]
@@ -338,7 +377,6 @@ def _create_managed_client(**server_kwargs):
     d.addErrback(_eb_both_error, my_deferred, purity_client)
     # ... my_deferred will be triggered when all is done. 
     return my_deferred
-
 
 #def create_simple_client(**server_kwargs):
 #    """
@@ -353,7 +391,7 @@ def _create_managed_client(**server_kwargs):
 #    else:
 #        return _create_managed_client(**server_kwargs)
 
-def create_client(**pd_kwargs):
+def create_simple_client(**pd_kwargs):
     """
     New version of create_simple_client, but using 
     the managed process. Its deferred results in a purity client.
@@ -361,5 +399,33 @@ def create_client(**pd_kwargs):
     """
     return _create_managed_client(**pd_kwargs)
 
-create_simple_client = create_client # alias
+def killall_pd():
+    """
+    Kills all running pure data children.
+    """
+    # TODO: make sure they are still running
+    global _pure_data_managers
+    dl = []
+    for manager in _pure_data_managers:
+        if VERBOSE:
+            print("stopping pure data process manager %s" % (manager))
+        d = manager.stop()
+        dl.append(d)
+    d = process.deferred_list_wrapper(dl)
+    return d
+
+def killall_pd_and_stop_reactor():
+    """
+    wraps killall_pd and stops reactor when done.
+    You would typically call this once you catched a KeyboardInterrupt.
+    """
+    def _cb(result):
+        reactor.stop()
+        return result
+    def _eb(reason):
+        reactor.stop()
+        return reason
+    d = killall_pd()
+    d.addCallback(_cb)
+    d.addErrback(_eb)
 

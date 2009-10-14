@@ -50,15 +50,19 @@ def creation_callback(purity_client):
     patch.connect(bang, 0, msg, 0)
     patch.connect(msg, 0, printer, 0)
 
-    print("purity_client: %s" % (purity_client))
+    #print("purity_client: %s" % (purity_client))
     # send messages
-    #client.create_patch(fudi_client, main_patch) # deprecated. use form below
     purity_client.create_patch(main_patch)
-    print "sent FUDI message:", "startme", 1
+    #print "sent FUDI message:", "startme", 1
     purity_client.send_message("startme", 1)
 
 if __name__ == "__main__":
+    print("Starting purity !")
     deferred = client.create_simple_client()
     deferred.addCallback(creation_callback)
-    reactor.run()
+    try:
+        reactor.run()
+    except KeyboardInterrupt:
+        print("Ctrl-C has been pressed.")
+        client.killall_pd_and_stop_reactor()
 
