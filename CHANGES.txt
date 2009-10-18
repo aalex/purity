@@ -2,6 +2,9 @@ purity changes log
 ------------------
 Changes are listed from most recent to oldest.
 
+0.2.1 (October 18th 2009)
+-------------------------
+ * Tried to fix sdist for pypi
 
 0.2.0 (October 14th 2009)
 -------------------------
