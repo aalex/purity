@@ -47,7 +47,7 @@ setup(
     description = "Purity dynamic patching library for Pure Data in Python.",
     long_description = """Purity is a Python library for Pure Data dynamic patching. The idea is to be able to harness the power of Pure Data for audio programming without having to use its graphical interface. Python's clear and intuitive syntax can be used with profit in order to create intricate patches with advanced string handling, graphical user interfaces and asynchronous network operations. Purity uses Twisted, an event-driven Python framework.
     """,
-    install_requires = ["twisted"], 
+    #install_requires = ["twisted"], 
     #scripts = ["bin/purity-example.py"], 
     license = "GPL",
     platforms = ["any"],
