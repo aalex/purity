@@ -47,17 +47,22 @@ Install Purity and start the example in a terminal window::
   sudo python setup.py install --prefix=/usr/local
   ./examples/hello_metro.py
 
+
 SEE ALSO
 --------
+
 You might want to learn to program in Python using Twisted. 
 See http://twistedmatrix.com/
 
 The officiel Purity Web site is a wiki located at 
 http://wiki.dataflow.ws/Purity
 
+
 DEVELOPERS NOTES
 ----------------
+
 Developers will need those commands::
+
   sudo python setup.py develop --prefix=/usr/local
   python setup.py sdist 
   python setup.py register sdist upload

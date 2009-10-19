@@ -38,15 +38,6 @@ DOWNLOAD_FILE = "purity-%s.tar.gz" % (__version__)
 
 from distutils.core import setup
 
-#try:
-#    from setuptools import find_packages
-#    from setuptools import setup
-#except ImportError, e:
-#    print("You must install python-setuptools.")
-#    print("Such as using \"sudo apt-get install python-setuptools\"")
-#    import sys
-#    sys.exit(1)
-
 setup(
     name = "purity",
     version = __version__,
@@ -56,13 +47,12 @@ setup(
     description = "Purity dynamic patching library for Pure Data in Python.",
     long_description = """Purity is a Python library for Pure Data dynamic patching. The idea is to be able to harness the power of Pure Data for audio programming without having to use its graphical interface. Python's clear and intuitive syntax can be used with profit in order to create intricate patches with advanced string handling, graphical user interfaces and asynchronous network operations. Purity uses Twisted, an event-driven Python framework.
     """,
-    #install_requires = ["twisted"], 
+    install_requires = ["twisted"], 
     #scripts = ["bin/purity-example.py"], 
     license = "GPL",
     platforms = ["any"],
     packages = ['purity', "purity/data", "purity/test"],# "purity/data"],
     package_data = {'purity':['data/*.pd']},
-    ##"":["*.ttf", "*.rst", "*.png", "*.jpg", "*.pd"]
     download_url = "%s/%s" % (DOWNLOAD_DIR, DOWNLOAD_FILE),
     keywords = [], #TODO
     classifiers = [
@@ -79,11 +69,3 @@ setup(
         ],
     )
 
-#test_suite='nose.collector',
-#      data_files = [
-#         ('share/man/man1', [
-#             'scripts/send_osc.1',
-#             'scripts/dump_osc.1',
-#         ]),
-#     ],
- 

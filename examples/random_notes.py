@@ -74,7 +74,12 @@ def audio_patch(purity_client):
     #reactor.callLater(0.1, send_random_note, purity_client, send_random_note)
 
 if __name__ == "__main__":
-    deferred = client.create_simple_client()
+    deferred = client.create_simple_client(
+        rate=48000, 
+        #driver="jack", 
+        driver="alsa", 
+        nogui=True
+        )
     deferred.addCallback(audio_patch)
     try:
         reactor.run()

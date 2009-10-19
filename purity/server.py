@@ -25,6 +25,7 @@ Launcher for a Pure Data process.
 """
 import os
 import sys
+import warnings
 import subprocess
 import purity
 from purity import process
@@ -115,6 +116,10 @@ class PureData(object):
         command = "pd"
         if self.driver == "jack":
             command += " -jack"
+        elif self.driver == "alsa":
+            command += " -alsa"
+        else:
+            warnings.warn("Driver %s is not supported - yet." % (self.driver))
         if self.verbose:
             command += " -verbose"
         command += " -r %d" % (self.rate)
