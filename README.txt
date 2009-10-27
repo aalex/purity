@@ -48,6 +48,17 @@ Install Purity and start the example in a terminal window::
   ./examples/hello_metro.py
 
 
+EXAMPLES
+--------
+
+Some examples are shipped with the purity Python package. To try them, 
+run the examples scripts located in purity/examples ::
+
+  python purity/examples/gtksampler.py
+  python purity/examples/hello_metro.py
+  python purity/examples/random_notes.py
+
+
 SEE ALSO
 --------
 
