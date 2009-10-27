@@ -51,7 +51,7 @@ setup(
     #scripts = ["bin/purity-example.py"], 
     license = "GPL",
     platforms = ["any"],
-    packages = ['purity', "purity/data", "purity/test"],# "purity/data"],
+    packages = ['purity', "purity/data", "purity/examples", "purity/test"],# "purity/data"],
     package_data = {'purity':['data/*.pd']},
     download_url = "%s/%s" % (DOWNLOAD_DIR, DOWNLOAD_FILE),
     keywords = [], #TODO
