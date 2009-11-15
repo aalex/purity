@@ -45,7 +45,7 @@ Install Purity and start the example in a terminal window::
   cd purity/
   sudo python setup.py build
   sudo python setup.py install --prefix=/usr/local
-  ./examples/hello_metro.py
+  ./purity/examples/hello_metro.py
 
 
 EXAMPLES
