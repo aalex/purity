@@ -29,7 +29,6 @@ GNU General Public License for more details.
 You should have received a copy of the gnu general public license
 along with Purity.  If not, see <http://www.gnu.org/licenses/>.
 
-
 INSTALLATION
 ------------
 
@@ -47,7 +46,6 @@ Install Purity and start the example in a terminal window::
   sudo python setup.py install --prefix=/usr/local
   ./purity/examples/hello_metro.py
 
-
 EXAMPLES
 --------
 
@@ -58,7 +56,6 @@ run the examples scripts located in purity/examples ::
   python purity/examples/hello_metro.py
   python purity/examples/random_notes.py
 
-
 SEE ALSO
 --------
 
@@ -67,7 +64,6 @@ See http://twistedmatrix.com/
 
 The officiel Purity Web site is a wiki located at 
 http://wiki.dataflow.ws/Purity
-
 
 DEVELOPERS NOTES
 ----------------
