@@ -31,11 +31,10 @@ protocol for Twisted.
 
 One could write a non-asynchronous version of this. (no network here)
 """
-#TODO: rename this file to patch.py
 import random 
 from zope import interface
 
-VERBOSE = True
+VERBOSE = False
 VERY_VERBOSE = False
 
 _gen_pos_indexes = {}
@@ -370,7 +369,3 @@ if __name__ == "__main__":
             print(fudi.to_fudi(i[0]).strip())
         else:
             print(fudi.to_fudi(i[0], *i[1:]).strip())
-
-
-
-
