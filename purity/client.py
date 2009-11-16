@@ -225,12 +225,24 @@ class PurityClient(object):
         """
         Sends the creation messages for a subpatch.
         """
+        def _cl_drip_messages(self, messages):
+            try:
+                mess = messages.pop(0)
+            except IndexError, e:
+                pass
+            else:
+                if VERBOSE:
+                    print("%s" % (mess))
+                self.send_message(*mess)
+                reactor.callLater(0.01, _cl_drip_messages, self, messages) # wait 10 ms between each message.
+                
         mess_list = patch.get_fudi() # list of (fudi) lists
         # print(mess_list)
-        for mess in mess_list:
-            if VERBOSE:
-                print("%s" % (mess))
-            self.send_message(*mess)
+        #for mess in mess_list:
+        #    if VERBOSE:
+        #        print("%s" % (mess))
+        #    self.send_message(*mess)
+        _cl_drip_messages(self, mess_list)
 
 #def create_patch(fudi_client, patch):
 #    """
