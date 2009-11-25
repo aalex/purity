@@ -1,0 +1,22 @@
+Source: python-purity
+Section: python
+Priority: optional
+Maintainer: Alexandre Quessy <alexandre@quessy.net>
+Build-Depends: cdbs, debhelper (>= 5.0.38), python-central (>= 0.6.0)
+XS-Python-Version: >= 2.4
+Standards-Version: 3.8.0
+Homepage: http://wiki.dataflow.ws/Purity
+
+Package: python-purity
+Architecture: all
+XB-Python-Version: ${python:Versions}
+Depends: ${misc:Depends}, python (>= 2.4), python-central (>= 0.6.7), python-twisted, python-dev, puredata
+Description: The Purity library for Pure Data dynamic patching.
+ .
+ Purity is a Python library for Pure Data dynamic patching. The idea is to be 
+ able to harness the power of Pure Data for audio programming without having 
+ to use its graphical interface. Python's clear and intuitive syntax can be 
+ used with profit in order to create intricate patches with advanced string 
+ handling, graphical user interfaces and asynchronous network operations. 
+ Purity uses Twisted, an event-driven Python framework.
+

@@ -1,7 +1,7 @@
-#N canvas 446 69 423 148 10;
+#N canvas 895 207 423 148 10;
 #X obj 38 21 cnv 15 100 100 empty empty purity 20 12 0 14 -258113 -66577
 0;
-#N canvas 148 321 665 219 __guts__ 0;
+#N canvas 378 255 665 219 __guts__ 0;
 #X obj -48 214 s;
 #X obj -115 121 list split 1;
 #X obj -115 163 list;
@@ -89,3 +89,7 @@ __ping__ \, __pong__;
 #X restore 63 83 pd __guts__;
 #N canvas 573 135 450 300 __main__ 0;
 #X restore 63 58 pd __main__;
+#X obj 190 71 s __enable_verbose__;
+#X obj 190 50 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
+1;
+#X connect 4 0 3 0;
