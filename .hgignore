@@ -4,4 +4,10 @@ build/*
 dist/*
 .*.swp
 MANIFEST
+# debian stuff
+debian/toonloop*
+debian/compat
+debian/files
+debian/pycompat
+python-build-stamp-*
 
