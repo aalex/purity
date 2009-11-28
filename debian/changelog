@@ -1,3 +1,10 @@
+
+python-purity (0.2.3-2) unstable; urgency=low
+
+  * Alternative dep for puredata | pd-extended
+
+ -- Alexandre Quessy <alexandre@quessy.net> Wed, 25 Nov 2009 13:20:34 -0500
+
 python-purity (0.2.3) unstable; urgency=low
 
   * initial packaging 
