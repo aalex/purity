@@ -5,7 +5,7 @@ dist/*
 .*.swp
 MANIFEST
 # debian stuff
-debian/toonloop*
+debian/python-purity*
 debian/compat
 debian/files
 debian/pycompat
