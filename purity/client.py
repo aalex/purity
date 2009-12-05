@@ -159,6 +159,12 @@ class PurityClient(object):
         # print "stop"
         # reactor.stop()
     
+    def __del__(self):
+        """
+        Destructor. Will try to stop the pd process.
+        """
+        self.stop()
+
     def quit(self):
         """
         Quits server and client.
@@ -225,24 +231,23 @@ class PurityClient(object):
         """
         Sends the creation messages for a subpatch.
         """
-        def _cl_drip_messages(self, messages):
+        def _cl_drip_messages(self, messages, deferred):
+            DELAY_BETWEEN_EACH = 0.01
+            # wait 10 ms between each message.
             try:
                 mess = messages.pop(0)
             except IndexError, e:
-                pass
+                deferred.callback(True) # done
             else:
                 if VERBOSE:
                     print("%s" % (mess))
                 self.send_message(*mess)
-                reactor.callLater(0.01, _cl_drip_messages, self, messages) # wait 10 ms between each message.
-                
+                reactor.callLater(DELAY_BETWEEN_EACH, _cl_drip_messages, 
+                    self, messages, deferred) 
         mess_list = patch.get_fudi() # list of (fudi) lists
-        # print(mess_list)
-        #for mess in mess_list:
-        #    if VERBOSE:
-        #        print("%s" % (mess))
-        #    self.send_message(*mess)
-        _cl_drip_messages(self, mess_list)
+        deferred = defer.Deferred()
+        _cl_drip_messages(self, mess_list, deferred)
+        return deferred
 
 #def create_patch(fudi_client, patch):
 #    """

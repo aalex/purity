@@ -57,21 +57,22 @@ def audio_patch(purity_client):
     patch.connect(osc, 0, mult, 0)
     patch.connect(mult, 0, dac, 0)
     patch.connect(mult, 0, dac, 1) # stereo
-    # todo later:
-    def send_random_note(purity_client):
-        global RUNNING
-        note = random.randint(48, 72)
-        delay = 0.15
-        if VERBOSE:
-            print("note %f" % (note))
-        purity_client.send_message("note", note, delay) # ms
     
+    def _done(result, purity_client):
+        def send_random_note(purity_client):
+            global RUNNING
+            note = random.randint(48, 72)
+            delay = 0.15
+            if VERBOSE:
+                print("note %f" % (note))
+            purity_client.send_message("note", note, delay) # ms
+        purity_client.send_message("pd", "dsp", 1)
+        looping_call = task.LoopingCall(send_random_note, (purity_client))
+        looping_call.start(0.15)
+        #reactor.callLater(0.1, send_random_note, purity_client, send_random_note)
     # send messages
-    purity_client.create_patch(main)
-    purity_client.send_message("pd", "dsp", 1)
-    looping_call = task.LoopingCall(send_random_note, (purity_client))
-    looping_call.start(0.15)
-    #reactor.callLater(0.1, send_random_note, purity_client, send_random_note)
+    deferred = purity_client.create_patch(main)
+    deferred.addCallback(_done, purity_client)
 
 if __name__ == "__main__":
     deferred = client.create_simple_client(
