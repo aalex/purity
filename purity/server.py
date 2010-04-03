@@ -89,7 +89,7 @@ class PureData(object):
     """
     Launches Pure Data software. 
     """
-    def __init__(self, rate=48000, listdev=True, inchannels=2, outchannels=2, verbose=True, driver="jack", nogui=False, blocking=True, patch=None, process_tool="subprocess"):
+    def __init__(self, rate=48000, listdev=True, inchannels=2, outchannels=2, verbose=True, driver="jack", nogui=False, blocking=True, patch=None, process_tool="subprocess", audioindev=None, audiooutdev=None):
         global DYNAMIC_PATCH
         self.rate = rate
         self.listdev = listdev
@@ -100,6 +100,9 @@ class PureData(object):
         self.nogui = nogui
         self.blocking=blocking
         self.patch = patch
+        self.audioindev = audioindev
+        self.audiooutdev = audiooutdev
+        
         if self.patch is None: # default patch:
             self.patch = DYNAMIC_PATCH
         self.process_tool = process_tool
@@ -118,6 +121,11 @@ class PureData(object):
             command += " -jack"
         elif self.driver == "alsa":
             command += " -alsa"
+            if self.audioindev is not None:
+                command += " -audioindev %d" % (self.audioindev)
+            if self.audiooutdev is not None:
+                command += " -audiooutdev %d" % (self.audiooutdev)
+            command += " -listdev"
         else:
             warnings.warn("Driver %s is not supported - yet." % (self.driver))
         if self.verbose:
