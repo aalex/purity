@@ -1,4 +1,13 @@
 syntax: glob
 *.pyc
 build/*
+dist/*
 .*.swp
+MANIFEST
+# debian stuff
+debian/python-purity*
+debian/compat
+debian/files
+debian/pycompat
+python-build-stamp-*
+

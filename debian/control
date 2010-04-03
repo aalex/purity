@@ -10,7 +10,7 @@ Homepage: http://wiki.dataflow.ws/Purity
 Package: python-purity
 Architecture: all
 XB-Python-Version: ${python:Versions}
-Depends: ${misc:Depends}, python (>= 2.4), python-central (>= 0.6.7), python-twisted, python-dev, puredata
+Depends: ${misc:Depends}, python (>= 2.4), python-central (>= 0.6.7), python-twisted, python-dev, puredata | pd-extended
 Description: The Purity library for Pure Data dynamic patching.
  .
  Purity is a Python library for Pure Data dynamic patching. The idea is to be 

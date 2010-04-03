@@ -448,6 +448,7 @@ class ProcessManager(object):
             self.state = self.STATE_STOPPING
             self._shutdown_check = DelayedWrapper()
             deferred = self._shutdown_check.call_later(self.check_delay, self._cl_check_if_stopped)
+            self._process_transport.signalProcess('KILL')
             self._process_transport.loseConnection()
             return deferred
         else:

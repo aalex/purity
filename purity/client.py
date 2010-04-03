@@ -159,25 +159,18 @@ class PurityClient(object):
         # print "stop"
         # reactor.stop()
     
+    def __del__(self):
+        """
+        Destructor. Will try to stop the pd process.
+        """
+        self.stop()
+
     def quit(self):
         """
         Quits server and client.
         :return deferred:
         """
-        #deferred = defer.Deferred()
-        #def _kill_server(deferred):
-        #    try:
-        #        sig = 9
-        #        os.kill(self.pd_pid, sig)
-        #        mess = "Killed Pure Data successfully."
-        #    except OSError, e:
-        #        mess = "Pure Data quit successfully."
-        #    deferred.callback(mess)
-        #self.send_message("pd", "quit")
-
-        #if self.pd_pid is not None:
-        #    reactor.callLater(0.5, _kill_server, deferred)
-        #return deferred
+        #TODO: os.kill(self.pd_pid, sig)
         #FIXME : stopping pd process, buts still need to cleanup TCP listener
         if self._pure_data_launcher is not None:
             return self._pure_data_launcher._process_manager.stop()
@@ -190,6 +183,7 @@ class PurityClient(object):
         
         Typically, you would catch a KeyboardInterrupt and call this.
         """
+        #FIXME: is this supposed to work at all? where are deferreds and callbacks?
         def _ok(result, d):
             reactor.stop()
             return result
@@ -206,92 +200,36 @@ class PurityClient(object):
         if self.client_protocol is not None:
             if VERYVERBOSE:
                 print("Purity sends %s %s" % (selector, str(args)))
-            # if fudi.VERBOSE:
-            # print("sending %s" % (str(args)))
-            # print args[0], args[1:]
-            # args = list(args[1:])
-            # atom = args[0]
-            # print("will send %s %s" % (selector, args))
-            # self.client_protocol.send_message(*args, selector)
             self.client_protocol.send_message(selector, *args)
         else:
             print("Could not send %s" % (str(args)))
+        #TODO: get rid of this
         if self.quit_after_message:
             print "stopping the application"
-            # TODO: try/catch
             reactor.callLater(0, reactor.stop)
 
     def create_patch(self, patch):
         """
         Sends the creation messages for a subpatch.
         """
-        def _cl_drip_messages(self, messages):
+        def _cl_drip_messages(self, messages, deferred):
+            DELAY_BETWEEN_EACH = 0.01
+            # wait 10 ms between each message.
             try:
                 mess = messages.pop(0)
             except IndexError, e:
-                pass
+                deferred.callback(True) # done
             else:
                 if VERBOSE:
                     print("%s" % (mess))
                 self.send_message(*mess)
-                reactor.callLater(0.01, _cl_drip_messages, self, messages) # wait 10 ms between each message.
-                
+                reactor.callLater(DELAY_BETWEEN_EACH, _cl_drip_messages, 
+                    self, messages, deferred) 
         mess_list = patch.get_fudi() # list of (fudi) lists
-        # print(mess_list)
-        #for mess in mess_list:
-        #    if VERBOSE:
-        #        print("%s" % (mess))
-        #    self.send_message(*mess)
-        _cl_drip_messages(self, mess_list)
+        deferred = defer.Deferred()
+        _cl_drip_messages(self, mess_list, deferred)
+        return deferred
 
-#def create_patch(fudi_client, patch):
-#    """
-#    Sends the creation messages for a subpatch.
-#    DEPRECATED. Use client.create_patch(patch) instead.
-#    """
-#    mess_list = patch.get_fudi() # list of (fudi) lists
-#    # print(mess_list)
-#    for mess in mess_list:
-#        if VERBOSE:
-#            print("%s" % (mess))
-#        fudi_client.send_message(*mess)
-
-#def _create_forked_client(**server_kwargs):
-#    # technique 1: using fork and exec
-#    # TODO: receive message from pd to know when it is really ready.
-#    def _client_started(protocol, my_deferred, the_client):
-#        """
-#        Called when purity received __first_connected__
-#        """
-#        print("_client_started")
-#        print("trigger callback %s %s" % (my_deferred, the_client))
-#        my_deferred.callback(the_client)
-#        return True
-#
-#    def _server_started(the_server, my_deferred, the_client):
-#        """
-#        called when pd and purity are connected.
-#        """
-#        print("_server_started")
-#        # the_server is useless here.
-#        c_deferred = the_client.start_purity_sender() # start it
-#        c_deferred.addCallback(_client_started, my_deferred, the_client)
-#
-#    my_deferred = defer.Deferred()
-#    pid = server.fork_and_start_pd(**server_kwargs)
-#    if pid != 0:
-## FIXME: we should start_purity_server prior to launch pd !
-#        the_client = PurityClient(
-#            receive_port=15555, 
-#            send_port=17777, 
-#            quit_after_message=False, 
-#            pd_pid=pid,
-#            use_tcp=True) # create the client
-#        s_deferred = the_client.start_purity_receiver() # triggered when it receives __on_first_connected__
-#        s_deferred.addCallback(_server_started, my_deferred, the_client)
-#        return s_deferred
-#    else:
-#        sys.exit(0) # do not do anything else here !
 
 def _create_managed_client(**server_kwargs):
     """
@@ -320,33 +258,6 @@ def _create_managed_client(**server_kwargs):
         my_deferred.callback(the_client)
         #return the_client # pass client to next deferred.
     
-    #def _eb_manager_err(reason, my_deferred):
-    #    print("Could not start Pure Data process manager: %s" % (reason.getErrorMessage()))
-    #    my_deferred.errback(reason)
-    #    #return reason #propagate error
-
-    #def _cb_manager_started(result, my_deferred, purity_client):
-    #    """
-    #    called when pd and purity are connected.
-    #    """
-    #    print(" purity _receiver_started %s %s %s" % (result, my_deferred, purity_client))
-    #    # the_server is useless here.
-    #    pd_server = result
-    #    c_deferred = purity_client.start_purity_sender() # start the fudi sender. should trigger its callback quite quickly is a [netreceives] is listening
-    #    c_deferred.addCallback(_cb_sender_started, my_deferred, purity_client)
-    #    c_deferred.addErrback(_eb_sender_error, my_deferred)
-
-    #def _cb_receiver_started(result, my_deferred, purity_client):
-    #    print("purity receiver started")
-    #    my_deferred = defer.Deferred()
-    #    manager_deferred = server.run_pd_manager(**server_kwargs)
-    #    manager_deferred.addCallback(_cb_manager_started, my_deferred)
-    #    manager_deferred.addErrback(_eb_manager_err, my_deferred)
-    #
-    #def _eb_receiver_error(reason, my_deferred, purity_client):
-    #    print("Could not start purity receiver: %s" % (reason.getErrorMessage()))
-    #    my_deferred.errback(reason)
-    # function body -------
     
     def _cb_both_started(result, my_deferred, purity_client):
         if VERBOSE:
@@ -390,19 +301,6 @@ def _create_managed_client(**server_kwargs):
     # ... my_deferred will be triggered when all is done. 
     return my_deferred
 
-#def create_simple_client(**server_kwargs):
-#    """
-#    Creates a purity server (Pure Data process manager)
-#    and a purity client. 
-#    """
-#    USE_MANAGER = True
-#    #USE_MANAGER = False # XXX important 
-#    # technique 1: using fork and exec
-#    if not USE_MANAGER:
-#        return _create_forked_client(**server_kwargs)
-#    else:
-#        return _create_managed_client(**server_kwargs)
-
 def create_simple_client(**pd_kwargs):
     """
     New version of create_simple_client, but using 
@@ -440,4 +338,3 @@ def killall_pd_and_stop_reactor():
     d = killall_pd()
     d.addCallback(_cb)
     d.addErrback(_eb)
-

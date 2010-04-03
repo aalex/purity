@@ -52,9 +52,11 @@ def creation_callback(purity_client):
 
     #print("purity_client: %s" % (purity_client))
     # send messages
-    purity_client.create_patch(main_patch)
+    def _done(result, purity_client):
+        purity_client.send_message("startme", 1)
+    deferred = purity_client.create_patch(main_patch)
     #print "sent FUDI message:", "startme", 1
-    purity_client.send_message("startme", 1)
+    deferred.addCallback(_done, purity_client)
 
 if __name__ == "__main__":
     print("Starting purity !")
@@ -65,7 +67,10 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Ctrl-C has been pressed.")
         reactor.stop()
-    import subprocess
-    print("Killing all running pd processes.") # FIXME
-    subprocess.call("killall pd", shell=True)
+    KILL_PD = True
+    #KILL_PD = False
+    if KILL_PD:
+        import subprocess
+        print("Killing all running pd processes.") # FIXME
+        subprocess.call("killall pd", shell=True)
 
