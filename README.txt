@@ -42,7 +42,7 @@ Install Purity and start the example in a terminal window::
   cd ~/src/
   hg clone http://bitbucket.org/aalex/purity purity
   cd purity/
-  sudo python setup.py build
+  python setup.py build
   sudo python setup.py install --prefix=/usr/local
   ./purity/examples/hello_metro.py
 
@@ -65,11 +65,15 @@ See http://twistedmatrix.com/
 The officiel Purity Web site is a wiki located at 
 http://wiki.dataflow.ws/Purity
 
+The puresampler project is what Purity was made for. See 
+http://bitbucket.org/aalex/puresampler
+
 DEVELOPERS NOTES
 ----------------
 
 Developers will need those commands::
 
+  python setup.py build
   sudo python setup.py develop --prefix=/usr/local
   python setup.py sdist 
   python setup.py register sdist upload

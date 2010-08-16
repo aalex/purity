@@ -32,7 +32,7 @@ For developpers::
   sudo python setup.py develop --prefix=/usr/local
   sudo python setup.py develop --prefix=/usr/local --uninstall
 """
-__version__ = "0.2.4"
+__version__ = "0.3.0"
 DOWNLOAD_DIR = "http://alexandre.quessy.net/static/purity"
 DOWNLOAD_FILE = "purity-%s.tar.gz" % (__version__)
 
