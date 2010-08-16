@@ -32,8 +32,8 @@ For developpers::
   sudo python setup.py develop --prefix=/usr/local
   sudo python setup.py develop --prefix=/usr/local --uninstall
 """
-__version__ = "0.3.0"
-DOWNLOAD_DIR = "http://alexandre.quessy.net/static/purity"
+__version__ = "0.3.0" # also in purity/__init__.py
+DOWNLOAD_DIR = "http://tarballs.quessy.net/"
 DOWNLOAD_FILE = "purity-%s.tar.gz" % (__version__)
 
 from distutils.core import setup

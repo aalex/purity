@@ -21,3 +21,4 @@
 # along with Purity.  If not, see <http://www.gnu.org/licenses/>.
 #
 __all__ = ["canvas", "server", "client", "fudi"]
+__version__ = "0.3.0" # also in setup.py
