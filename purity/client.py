@@ -66,7 +66,6 @@ class PurityClient(object):
             self.fudi_server.register_message(selector, callback)
 
     def start_purity_receiver(self):
-        # TODO: rename to start_purity_receiver
         """ 
         You need to call this before launching the pd patch! 
         returns deferred
@@ -86,7 +85,6 @@ class PurityClient(object):
         return self._server_startup_deferred
 
     def start_purity_sender(self):
-        # TODO: rename to start_purity_sender
         """ 
         Starts purity sender. 
         returns deferred 

@@ -58,7 +58,7 @@ def _gen_position(parent, be_random=False):
     
 class IElement(interface.Interface):
     """
-    Any Pure Data Element. (object or message)
+    Any Pure Data Element. (e.g. box, connection, subpatch)
     """
     parent = interface.Attribute("""A pointer to the parent Element.""")
 
@@ -79,82 +79,72 @@ class IElement(interface.Interface):
         That list must then be converted to real ASCII fudi using the 
         fudi module.
         """
-        pass
 
     def set_parent(self, obj):
         """
         Sets the parent. 
         :param obj: An Element.
         """
-        pass
 
-class Obj(object):
+class Box(object):
     """
-    Generic Pure Data Object.
+    Base implementation of a Pure Data box.
+    Pd defines four kinds of boxes, implemented as subclasses:
+    object, message, gui object (unimplemented), and comment (unimplemented).
     """
     interface.implements(IElement)
+
+    # The message to send to tell Pd to create an object of this type.
+    # Should be specified by the subclass.
+    FUDI_NAME = None
+
     def __init__(self, name, *args, **keywords):
         """
         Keywords: pos, x, y
         """
         self.parent = None
         self.name = name
-        self.args = args
-        self.pos = [0, 0] # _gen_position(self.parent) # [random.randrange(10, 600), random.randrange(10, 400)]
-        if keywords.has_key("pos"):
-            self.pos = keywords["pos"]
-        if keywords.has_key("x"):
+        self.args = list(args)
+        self.pos = keywords.get("pos", [0, 0])
+        if "x" in keywords:
             self.pos[0] = keywords["x"]
-        if keywords.has_key("y"):
+        if "y" in keywords:
             self.pos[1] = keywords["y"]
 
-    def get_fudi(self):
-        """
-        Returns a list of (python-typed) atoms.
-        """
-        li = ["obj", self.pos[0], self.pos[1], self.name]
-        li.extend(self.args)
-        return li
-    
     def set_parent(self, obj):
         self.parent = obj
 
     def set_position(self, x, y):
         self.pos = [x, y]
 
-class Msg(object):
+    def connect(self, other, outlet=0, inlet=0):
+        """
+        Chainable convenience method to connect this box to another box.
+        """
+        self.parent.connect(self, outlet, other, inlet)
+        return other
+
+    def get_fudi(self):
+        """
+        Returns a list of (python-typed) atoms to create this box.
+        """
+        return [self.FUDI_NAME, self.pos[0], self.pos[1], self.name] + self.args
+
+class Obj(Box):
+    """
+    Generic Pure Data Object.
+    """
+    FUDI_NAME = "obj"
+
+class Msg(Box):
     """
     Pure Data message box.
     """
+    FUDI_NAME = "msg"
+
     # TODO: escape characters such as ","
-    interface.implements(IElement)
-    def __init__(self, *args, **keywords):
-        """
-        Keywords: pos, x, y
-        """
-        self.parent = None
-        self.args = args
-        self.pos = [0, 0]
-        if keywords.has_key("pos"):
-            self.pos = keywords["pos"]
-        if keywords.has_key("x"):
-            self.pos[0] = keywords["x"]
-        if keywords.has_key("y"):
-            self.pos[1] = keywords["y"]
-
     def get_fudi(self):
-        """
-        Returns a list of (python-typed) atoms.
-        """
-        li = ["msg", self.pos[0], self.pos[1]]
-        li.extend(self.args)
-        return li
-    
-    def set_parent(self, obj):
-        self.parent = obj
-
-    def set_position(self, x, y):
-        self.pos = [x, y]
+        return Box.get_fudi(self)
 
 class Receive(Obj):
     """
@@ -174,11 +164,9 @@ class Receive(Obj):
         """
         Returns a FUDI message suitable to be sent to that [receive] object. 
         """
-        li = [self.receive_symbol]
-        li.extend(args)
         if self.purity_client is not None:
             self.purity_client.send_message(self.receive_symbol, *args)
-        return li
+        return [self.receive_symbol] + args
 
 class Connection(object):
     """
@@ -208,12 +196,10 @@ class SubPatch(object):
     Pure Data Subpatch. 
     
     The default name is "__main__" for the [pd __main__] subpatch.
-    It can be found in purepy/data/dynamic_patch.pd
+    It can be found in purity/data/dynamic_patch.pd
     """
-    #TODO: add msg method.
-    #TODO: allow to connect message boxes
     interface.implements(IElement)
-    def __init__(self, name="__main__", visible=False):
+    def __init__(self, name, visible=False):
         self.parent = None
         self.name = name
         self.visible = visible
@@ -341,10 +327,10 @@ class SubPatch(object):
 
 def get_main_patch():
     """
-    Returns a sub patch which is [pd main] in the dynamic_patch.pd patch.
+    Returns a sub patch corresponding to the [pd __main__] subpatch
+    in purity/data/dynamic_patch.pd.
     """
-    #TODO: rename to [pd __main__]
-    return SubPatch() # default arg is that one
+    return SubPatch("__main__")
 
 if __name__ == "__main__":
     from purity import fudi
@@ -359,7 +345,7 @@ if __name__ == "__main__":
         test1.connect(r, 0, tgl, 0)
         test1.connect(tgl, 0, metro, 0)
 
-    main = SubPatch()
+    main = get_main_patch()
     for test in [test_1]:
         test(main)
     print("------ test results ------")
