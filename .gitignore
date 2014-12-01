@@ -1,0 +1,6 @@
+*.pyc
+build/*
+dist/*
+.*.swp
+MANIFEST
+purity.egg-info/
