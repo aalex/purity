@@ -36,7 +36,7 @@ __version__ = "0.3.0" # also in purity/__init__.py
 DOWNLOAD_DIR = "http://tarballs.quessy.net/"
 DOWNLOAD_FILE = "purity-%s.tar.gz" % (__version__)
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name = "purity",
